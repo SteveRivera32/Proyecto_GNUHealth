@@ -25,6 +25,7 @@ Antes de comenzar, asegúrate de tener instalado en tu máquina:
 
 2. **Los modelos se tienen que descargar localmente**
 
+    En WSL:
     ```bash
     ollama run <nombre_del_modelo>
 
