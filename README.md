@@ -19,16 +19,19 @@ Antes de comenzar, asegúrate de tener instalado en tu máquina:
 
 1. **Clona este repositorio:**
 
+   ```bash
    git clone https://github.com/tu-usuario/Proyecto_GNUHealth.git
    cd Proyecto_GNUHealth
 
 2. **Los modelos se tienen que descargar localmente**
 
+    ```bash
     ollama run <nombre_del_modelo>
 
 3. **Descargar imágenes y levantar contenedores**
 
-   -> En el directorio del proyecto:
+   En el directorio del proyecto:
+   ```bash
    docker-compose up -d
 
 4. **Abrir OpenWebUI**
@@ -37,7 +40,8 @@ Antes de comenzar, asegúrate de tener instalado en tu máquina:
     http://localhost:3000
 
 5. **Para reiniciar o detener los contenedores**
-
-    -> En el directorio del proyecto:
+    
+    En el directorio del proyecto:
+    ```bash
     docker-compose restart
     docker-compose down
