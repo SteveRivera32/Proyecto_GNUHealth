@@ -36,7 +36,7 @@ Antes de comenzar, asegúrate de tener instalado en tu máquina:
 
 4. **Abrir OpenWebUI**
 
-    -> En el navegador:
+    En el navegador:
     http://localhost:3000
 
 5. **Para reiniciar o detener los contenedores**
@@ -44,4 +44,7 @@ Antes de comenzar, asegúrate de tener instalado en tu máquina:
     En el directorio del proyecto:
     ```bash
     docker-compose restart
+    ```
+    
+    ```bash
     docker-compose down
