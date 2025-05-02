@@ -61,21 +61,16 @@ async def handle_prompt(request: PromptRequest):
 # Modelos disponibles simulando compatibilidad con OpenAI
 available_models = [
     {
-        "id": "gpt-3.5-turbo",
+        "id": "anindya/prem1b-sql-ollama-fp116:latest",
         "object": "model",
         "created": 1686935000,
-        "owned_by": "openai"
+        "owned_by": "premai-open-source"
     },
-    {
-        "id": "gpt-4",
-        "object": "model",
-        "created": 1686936000,
-        "owned_by": "openai"
-    }
+
 ]
 
 # Endpoint para listar modelos (imitación OpenAI)
-@app.get("/v1/models")
+@app.get("/api/models")
 async def list_models():
     return JSONResponse(content={
         "object": "list",
@@ -83,41 +78,22 @@ async def list_models():
     })
 
 # Endpoint principal tipo chat/completion (respuesta mock)
-@app.post("/v1/chat/completions")
+@app.post("/api/chat/completions")
 async def chat_completions(request: ChatCompletionRequest, authorization: str = Header(default=None)):
+    
     return {
-        "id": "chatcmpl-" + hashlib.sha256(str(request.messages).encode()).hexdigest()[:24],
+        "id":"premSQLChat-" + hashlib.sha256(str(request.messages).encode()).hexdigest()[:24] ,
         "object": "chat.completion",
-        "created": int(time.time()),
+        "created": time.time(),
         "model": request.model,
-        "choices": [
-            {
-                "index": 0,
-                "message": ChatMessage(role="assistant", content="Soy un asistente."),
-                "logprobs": None,
-                "finish_reason": "stop"
-            }
-        ],
-        "usage": {
-            "prompt_tokens": 19,
-            "completion_tokens": 2,
-            "total_tokens": 21,
-            "prompt_tokens_details": {
-                "cached_tokens": 0,
-                "audio_tokens": 0
-            },
-            "completion_tokens_details": {
-                "reasoning_tokens": 0,
-                "audio_tokens": 0,
-                "accepted_prediction_tokens": 0,
-                "rejected_prediction_tokens": 0
-            }
-        },
-        "service_tier": "default"
+        "choices": [{
+            "message": ChatMessage(role="assistant", content= "Here's the data in JSON format:\n\n```json\n[\n  {\"Nombre\": \"Diego\", \"Edad\": 23, \"Ciudad\": \"Tegucigalpa\"},\n  {\"Nombre\": \"Mariana\", \"Edad\": 21, \"Ciudad\": \"San Pedro\"},\n  {\"Nombre\": \"Alejandro\", \"Edad\": 25, \"Ciudad\": \"La Ceiba\"}\n]\n```"),
+            
+        }]
     }
 
 # Soporte para método OPTIONS (preflight request desde el frontend)
-@app.options("/v1/models")
+@app.options("/api/models")
 async def options_models():
     return Response(
         status_code=204,
@@ -128,7 +104,6 @@ async def options_models():
             "Access-Control-Allow-Headers": "Authorization, Content-Type"
         }
     )
-
 # Endpoint para evaluación (pendiente de implementación)
 @app.post("/eval")
 async def make_evaluation(eval_set: EvalSet):
