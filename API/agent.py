@@ -19,7 +19,7 @@ class Agent:
         
         self.agent = BaseLineAgent(
             session_name="testing_ollama",
-            db_connection_uri="sqlite:///california_schools.sqlite",
+            db_connection_uri="sqlite:///database/california_schools.sqlite",
             specialized_model1=self.model,
             specialized_model2=self.model,
             plot_tool=SimpleMatplotlibTool(),
