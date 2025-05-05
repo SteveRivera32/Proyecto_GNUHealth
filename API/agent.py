@@ -5,6 +5,21 @@ from premsql.executors import SQLiteExecutor
 
 import pandas as pd
 import json
+class Text2SQLGeneratorOllama:
+    def __init__(self, model_name, experiment_name, type, base_url="http://localhost:11434"):
+        self.model_name = model_name
+        self.experiment_name = experiment_name
+        self.type = type
+        self.base_url = base_url
+
+    def generate_sql(self, prompt):
+        url = f"{self.base_url}/api/generate"
+        headers = {"Content-Type": "application/json"}
+        payload = {
+            "model": self.model_name,
+            "prompt": prompt
+        }
+        
 class Agent:
     def __init__(self):
 
@@ -13,6 +28,7 @@ class Agent:
             model_name="gemma3:4b",
             experiment_name="ollama",
             type="test",
+            base_url="http://host.docker.internal:11434"
         )
 
         

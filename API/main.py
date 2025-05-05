@@ -62,7 +62,7 @@ async def handle_prompt(request: PromptRequest):
 # Modelos disponibles simulando compatibilidad con OpenAI
 available_models = [
     {
-        "id": "gemma3:4b",
+        "id": "prueba",
         "object": "model",
         "created": 1686935000,
         "owned_by": "premai-open-source"
@@ -90,7 +90,7 @@ async def chat_completions(request: ChatCompletionRequest, authorization: str = 
         "created": time.time(),
         "model": request.model,
         "choices": [{
-            "message": ChatMessage(role="assistant", content= response[0]),
+            "message": ChatMessage(role="assistant", content= f"{response[0]}"),
         }]
     }
 
