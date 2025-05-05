@@ -6,15 +6,20 @@ from typing import List, Optional
 import agent as ag
 import hashlib
 import time
+import os
 import pandas as pd
+from dotenv import load_dotenv
 
 
+
+load_dotenv()  # Cargar variables de entorno desde .env
+# Configuración de FastAPI
 app = FastAPI()
 
 # Middleware CORS para permitir solicitudes desde el frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Cambiar en producción
+    allow_origins=[f"{os.getenv("OPENWEB_UI_URL")}"],  # Cambiar en producción
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -51,7 +56,7 @@ class EvalSet(BaseModel):
 @app.post("/ask", response_model=PromptResponse)
 async def handle_prompt(request: PromptRequest):
     # Llama a la función del agente para generar una respuesta
-    agent = ag.Agent()
+    agent = ag.Agent(os.getenv("MODEL_NAME"))
     answer, df = agent.generate_response(request.prompt)
 
     return JSONResponse(content={
@@ -62,7 +67,7 @@ async def handle_prompt(request: PromptRequest):
 # Modelos disponibles simulando compatibilidad con OpenAI
 available_models = [
     {
-        "id": "gemma3:4b",
+        "id": f"{os.getenv('MODEL_NAME')}",
         "object": "model",
         "created": 1686935000,
         "owned_by": "premai-open-source"
@@ -81,7 +86,7 @@ async def list_models():
 # Endpoint principal tipo chat/completion (respuesta mock)
 @app.post("/api/chat/completions")
 async def chat_completions(request: ChatCompletionRequest, authorization: str = Header(default=None)):
-    agent = ag.Agent()
+    agent = ag.Agent(os.getenv("MODEL_NAME"))
     response = agent.generate_response(request.messages[0].content)
 
     return {

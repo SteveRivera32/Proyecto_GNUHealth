@@ -1,0 +1,4 @@
+.env
+.config
+secrets.json
+my_private_keys.pem
