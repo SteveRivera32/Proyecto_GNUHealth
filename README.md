@@ -49,3 +49,53 @@ Antes de comenzar, asegúrate de tener instalado en tu máquina:
     
     ```bash
     docker-compose down
+
+
+6. **Levantar Open AI endpoints**
+ Para correr la apiu deberas bajar el repositiorio:
+```bash 
+git clone https://github.com/tu-usuario/Proyecto_GNUHealth.git
+cd Proyecto_GNUHealth
+
+```
+Si usas conda crea un ambiente nuevo `venve` haciendo uso de 
+tambien deberas activar elentorno con `conda activate` y usar `pip` para instalar las dependencias.
+```bash
+   conda create --name <nombre_del_entorno> python=3.11
+   conda activate <nombre_del_entorno>
+   pip install -r requirements.txt
+
+
+```
+
+Si usas python venv deberas tener instalado python 3.11 y crear un python `venv`
+usand:
+```bash
+# Crear un entorno virtual de Python (venv) llamado "venv" en el directorio padre de "API"
+python3 -m venv ../venv
+
+# Navegar al directorio "API"
+cd API
+
+# Activar el entorno virtual "venv"
+# (El siguiente comando asume que estás en un sistema Unix/macOS.  Para Windows, usa "..\venv\Scripts\activate")
+source ../venv/bin/activate
+
+# Instalar las dependencias desde requirements.txt
+pip install -r requirements.txt
+
+# Desactivar el entorno virtual (opcional)
+deactivate
+
+```
+
+
+una vez las dependencias esten instaladas deberas correr en la carpeta de `API`
+ ```bash
+fastapi dev main.py
+```
+en open web ui deberas agregar la url de la API `https://localhost:8000`
+![image](https://github.com/user-attachments/assets/73f3c7f6-aae3-433a-a827-c83d2aa14bdc)
+
+
+
