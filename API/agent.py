@@ -10,9 +10,10 @@ class Agent:
 
         """Initialize the SQL agent with models and database connection."""
         self.model = Text2SQLGeneratorOllama(
-            model_name="anindya/prem1b-sql-ollama-fp116",
+            model_name="gemma3:4b",
             experiment_name="ollama",
-            type="test"
+            type="test",
+            ollama_base_url="http://host.docker.internal:11434"
         )
 
         

@@ -14,7 +14,7 @@ app = FastAPI()
 # Middleware CORS para permitir solicitudes desde el frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080","http://localhost:8000"],  # Cambiar en producción
+    allow_origins=["http://localhost:3000"],  # Cambiar en producción
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -61,7 +61,7 @@ async def handle_prompt(request: PromptRequest):
 # Modelos disponibles simulando compatibilidad con OpenAI
 available_models = [
     {
-        "id": "anindya/prem1b-sql-ollama-fp116:latest",
+        "id": "gemma3:4b",
         "object": "model",
         "created": 1686935000,
         "owned_by": "premai-open-source"
