@@ -51,7 +51,8 @@ class EvalSet(BaseModel):
 @app.post("/ask", response_model=PromptResponse)
 async def handle_prompt(request: PromptRequest):
     # Llama a la función del agente para generar una respuesta
-    answer, df = ag.Agent().generate_response(request.prompt)
+    agent = ag.Agent()
+    answer, df = agent.generate_response(request.prompt)
 
     return JSONResponse(content={
         "answer": answer,
@@ -80,15 +81,16 @@ async def list_models():
 # Endpoint principal tipo chat/completion (respuesta mock)
 @app.post("/api/chat/completions")
 async def chat_completions(request: ChatCompletionRequest, authorization: str = Header(default=None)):
-    
+    agent = ag.Agent()
+    response = agent.generate_response(request.messages[0].content)
+
     return {
         "id":"premSQLChat-" + hashlib.sha256(str(request.messages).encode()).hexdigest()[:24] ,
         "object": "chat.completion",
         "created": time.time(),
         "model": request.model,
         "choices": [{
-            "message": ChatMessage(role="assistant", content= "Here's the data in JSON format:\n\n```json\n[\n  {\"Nombre\": \"Diego\", \"Edad\": 23, \"Ciudad\": \"Tegucigalpa\"},\n  {\"Nombre\": \"Mariana\", \"Edad\": 21, \"Ciudad\": \"San Pedro\"},\n  {\"Nombre\": \"Alejandro\", \"Edad\": 25, \"Ciudad\": \"La Ceiba\"}\n]\n```"),
-            
+            "message": ChatMessage(role="assistant", content= response[0]),
         }]
     }
 

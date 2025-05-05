@@ -13,13 +13,12 @@ class Agent:
             model_name="gemma3:4b",
             experiment_name="ollama",
             type="test",
-            ollama_base_url="http://host.docker.internal:11434"
         )
 
         
         self.agent = BaseLineAgent(
             session_name="testing_ollama",
-            db_connection_uri="sqlite:///database/california_schools.sqlite",
+            db_connection_uri="sqlite:///california_schools.sqlite",
             specialized_model1=self.model,
             specialized_model2=self.model,
             plot_tool=SimpleMatplotlibTool(),
