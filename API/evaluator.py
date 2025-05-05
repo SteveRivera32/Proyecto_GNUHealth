@@ -30,7 +30,7 @@ class Evaluator:
         return 
     
 
-    
+
     def run_single_test(self,generated_sql, groun_truth_sql):
           
        # Set a sample dataset path 
@@ -41,15 +41,6 @@ class Evaluator:
            sql=sql,
            dsn_or_db_path=self.database_url
        )
-
-
-
-
-
-
-        
-    
-    
 
         # The purpose of this function run a single test or evaluation
     
