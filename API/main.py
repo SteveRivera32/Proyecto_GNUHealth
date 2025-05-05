@@ -90,7 +90,7 @@ async def chat_completions(request: ChatCompletionRequest, authorization: str = 
         "created": time.time(),
         "model": request.model,
         "choices": [{
-            "message": ChatMessage(role="assistant", content= response[0]),
+            "message": ChatMessage(role="assistant", content= f'{response[0]}'),
         }]
     }
 
