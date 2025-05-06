@@ -41,6 +41,23 @@ class Agent:
             executor=SQLiteExecutor()
         )
     
+    def generate_natural_response_stream(self, question: str) -> str:
+        """
+        Genera una respuesta en lenguaje natural para una pregunta dada.
+        Y la envia en tiempo real al usuario. Esta opcion habilitada como meramente una prueba 
+        para mostrar al usuario
+
+        Args:
+            question (str): Pregunta en lenguaje natural ingresada por el usuario.
+
+        Returns:
+            str: Respuesta generada por el modelo en lenguaje natural partida en Chunks 
+        """
+
+    
+        return  self.text_generator.generate_stream(question)
+    
+
     def generate_natural_response(self, question: str) -> str:
         """
         Genera una respuesta en lenguaje natural para una pregunta dada.
@@ -51,7 +68,7 @@ class Agent:
         Returns:
             str: Respuesta generada por el modelo en lenguaje natural.
         """
-        return self.text_generator.generate(question)
+        return  self.text_generator.generate(question)
     
     def generate_sql_response(self, question: str):
         """

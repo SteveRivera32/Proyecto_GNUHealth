@@ -35,6 +35,27 @@ class TextGenerator:
         """
         response = self.client.chat(
             model=self.model_name,
-            messages=[{"role": "user", "content": prompt}]
+            messages=[{"role": "user", "content": prompt}],
+            stream=False,
         )
         return response["message"]["content"]
+    
+    def generate_stream(self, prompt: str) -> str:
+        """
+        Envía un prompt al modelo y obtiene una respuesta generada en lenguaje natural.
+
+        Args:
+            prompt (str): Texto de entrada que será procesado por el modelo.
+
+        Returns:
+            str: Respuesta generada por el modelo Ollama.
+        """
+        response = self.client.chat(
+            model=self.model_name,
+            messages=[{"role": "user", "content": prompt}],
+            stream=True
+        )
+
+        return response
+
+        

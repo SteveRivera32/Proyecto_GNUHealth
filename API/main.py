@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Request, HTTPException, Header, Response
+from fastapi.responses import StreamingResponse
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from agents.response_stream import stream_response
 from models.chat import ChatCompletionRequest, ChatMessage, PromptRequest, PromptResponse, EvalSet
 import agents.agent as ag
 import hashlib
@@ -42,15 +44,15 @@ async def handle_prompt(request: PromptRequest):
 # Lista de modelos disponibles (imitando API de OpenAI)
 available_models = [
     {
-        "id": "Gemma2:2b",
+        "id": "tinyllama",
         "object": "model",
-        "created": 1686935000,
-        "owned_by": "premai-open-source"
+        "created": 1,
+        "owned_by": "google-open-source"
     },
      {
-        "id": "Text-SQL-Gemma2:7b",
+        "id": "anindya/prem1b-sql-ollama-fp116",
         "object": "model",
-        "created": 1686935000,
+        "created": 2,
         "owned_by": "premai-open-source"
     },
 ]
@@ -67,20 +69,35 @@ async def list_models():
 @app.post("/api/chat/completions")
 async def chat_completions(request: ChatCompletionRequest, authorization: str = Header(default=None)):
     # Crear agente y generar respuesta natural del modelo (último mensaje del usuario)
-    agent = ag.Agent(os.getenv("MODEL_NAME"))
-    answer = agent.generate_natural_response(request.messages[-1].content)
-    #answer = agent.generate_sql_response(request.messages[-1].content)  # Alternativa para generar SQL
 
-    # Devolver la respuesta formateada como si fuera OpenAI API
-    return {
-        "id": "premSQLChat-" + hashlib.sha256(str(request.messages).encode()).hexdigest()[:24],
-        "object": "chat.completion",
-        "created": time.time(),
-        "model": request.model,
-        "choices": [{
-            "message": ChatMessage(role="assistant", content=answer),
-        }]
-    }
+    agent = ag.Agent(request.model)
+    
+    stream=request.stream,
+    chat_id="premSQLChat-" + hashlib.sha256(str(request.messages).encode()).hexdigest()[:24]
+    #Text streaming no soportado por el momento
+    print("streaming",stream)
+
+    #Vamos a realziar dejando este codgo como siempre boolean.
+    #Al parecer se necesta nvestigar sobre algunos metodos asincronos para este tipo de generacion.
+    # En caso de que el modelo no soporte streaming, se devuelve la respuesta completa
+    # En caso de que el modelo no soporte streaming, se devuelve la respuesta completa
+    # En caso de que el modelo no soporte streaming, se devuelve la respuesta completa
+    if  True:
+        answer = agent.generate_natural_response_stream(request.messages[-1].content)
+        return StreamingResponse(stream_response(answer,request.model,chat_id,time.time()), media_type="text/event-stream")
+
+    else:
+        # Devolver la respuesta formateada como si fuera OpenAI API
+        answer = agent.generate_natural_response(request.messages[-1].content)
+        return {
+            "id":chat_id ,
+            "object": "chat.completion",
+            "created": time.time(),
+            "model": request.model,
+            "choices": [{
+                "message": ChatMessage(role="assistant", content=answer),
+            }]
+        }
 
 # Soporte para solicitudes OPTIONS desde frontend (preflight)
 @app.options("/api/models")
