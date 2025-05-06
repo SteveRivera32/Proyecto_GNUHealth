@@ -42,7 +42,13 @@ async def handle_prompt(request: PromptRequest):
 # Lista de modelos disponibles (imitando API de OpenAI)
 available_models = [
     {
-        "id": os.getenv('MODEL_NAME'),
+        "id": "Gemma2:2b",
+        "object": "model",
+        "created": 1686935000,
+        "owned_by": "premai-open-source"
+    },
+     {
+        "id": "Text-SQL-Gemma2:7b",
         "object": "model",
         "created": 1686935000,
         "owned_by": "premai-open-source"
