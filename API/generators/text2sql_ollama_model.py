@@ -1,7 +1,7 @@
 from typing import Optional
 from premsql.generators.base import Text2SQLGeneratorBase
 from premsql.logger import setup_console_logger
-
+import os
 logger = setup_console_logger(name="[OLLAMA-GENERATOR]")
 
 try:
@@ -55,7 +55,7 @@ class Text2SQLGeneratorOllama(Text2SQLGeneratorBase):
     @property
     def load_client(self):
         # Retorna el cliente Ollama para conectarse al modelo
-        return Client(host='http://localhost:11434')
+        return Client(host=os.getenv("OLLAMA_URL", "http://localhost:11434"))
     
     @property
     def load_tokenizer(self):

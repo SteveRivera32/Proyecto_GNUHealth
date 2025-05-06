@@ -1,5 +1,5 @@
 from ollama import Client
-
+import os
 # Conecta al servidor local de Ollama
 client = Client(host='http://localhost:11434')
 
@@ -21,7 +21,7 @@ class TextGenerator:
             model_name (str): Nombre del modelo cargado en el servidor Ollama.
         """
         self.model_name = model_name
-        self.client = Client(host='http://localhost:11434')  # Conexión al servidor Ollama
+        self.client = Client(host=os.getenv("OLLAMA_URL", "http://localhost:11434")) # Conexión al servidor Ollama
 
     def generate(self, prompt: str) -> str:
         """
