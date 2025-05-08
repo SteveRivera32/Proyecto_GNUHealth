@@ -79,6 +79,12 @@ available_models = [
         "created": 2,
         "owned_by": "premai-open-source"
     },
+       {
+        "id": "gemma3:4b",
+        "object": "model",
+        "created": 2,
+        "owned_by": "premai-open-source"
+    },
 ]
 
 # Endpoint para listar modelos disponibles (para compatibilidad con clientes tipo OpenAI)
