@@ -103,9 +103,8 @@ async def chat_completions(request: ChatCompletionRequest, authorization: str = 
 
     #Vamos a realziar dejando este codgo como siempre boolean.
     #Al parecer se necesta nvestigar sobre algunos metodos asincronos para este tipo de generacion.
-    # En caso de que el modelo no soporte streaming, se devuelve la respuesta completa
-    # En caso de que el modelo no soporte streaming, se devuelve la respuesta completa
-    # En caso de que el modelo no soporte streaming, se devuelve la respuesta completa
+ 
+    #Atencion la funcion de streaming esta rota desabilitar text-streamin en open web ui
     if  stream==True:
         answer = agent.generate_natural_response_stream(request.messages[-1].content)
         return StreamingResponse(stream_response(answer,request.model,chat_id,time.time()), media_type="text/event-stream")
@@ -113,6 +112,7 @@ async def chat_completions(request: ChatCompletionRequest, authorization: str = 
     else:
         # Devolver la respuesta formateada como si fuera OpenAI API
         answer = agent.generate_sql_response(request.messages[-1].content)
+   
         return {
             "id":chat_id ,
             "object": "chat.completion",
@@ -141,4 +141,5 @@ async def options_models():
 async def make_evaluation(eval_set: EvalSet):
     # Resultado simulado de evaluación
     results = 0
+
     return JSONResponse(content={"results": results})

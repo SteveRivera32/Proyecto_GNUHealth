@@ -4,6 +4,7 @@ from premsql.agents.tools import SimpleMatplotlibTool
 from premsql.executors import SQLiteExecutor
 from generators.natural_ollama_model import TextGenerator 
 import pandas as pd
+from tabulate import tabulate
 import json
 
 class Agent:
