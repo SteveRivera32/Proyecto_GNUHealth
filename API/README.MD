@@ -36,7 +36,7 @@ pip install ollama
 pip install -U premsql
 pip install "fastapi["standard"]"
 pip install "uvicorn[standard]"
-
+pip install tabulate
 ```
 
 
