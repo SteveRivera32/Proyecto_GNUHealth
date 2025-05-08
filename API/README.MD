@@ -168,4 +168,4 @@ Esto imita la API de streaming de OpenAI (`chat.completions` con `delta`) pero u
 
 ---
 
-¿Quieres que esto también acepte múltiples `messages` como entrada, en vez de solo `prompt` plano?
+
