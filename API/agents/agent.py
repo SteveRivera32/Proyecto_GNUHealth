@@ -90,5 +90,10 @@ class Agent:
         # json_data = json.dumps(data_dict)
         print("-"*200)
         print(response)  # Salida de depuración
+      
+
+        # Convertir a Markdown
+        markdown_table = tabulate(response.output_dataframe, headers="keys", tablefmt="github")
+        print(markdown_table)
     
-        return response.sql_string
+        return response.sql_string+"\n"+markdown_table

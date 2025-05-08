@@ -32,9 +32,10 @@ source ../venv/bin/activate
 
 # Instalar las dependencias desde requirements.txt
 pip install -r requirements.txt
-
-# Desactivar el entorno virtual (opcional)
-deactivate
+pip install ollama
+pip install -U premsql
+pip install "fastapi["standard"]"
+pip install "uvicorn[standard]"
 
 ```
 
@@ -42,6 +43,10 @@ deactivate
 una vez las dependencias esten instaladas deberas correr en la carpeta de `API`
  ```bash
 fastapi dev main.py
+```
+Tambien puedes es correr este omcnado en lugar de fastapi para habilitar conexion de todos los puertos
+```bash 
+uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 en open web ui deberas agregar la url de la API `https://localhost:8000`
 
