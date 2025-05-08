@@ -87,7 +87,7 @@ class Agent:
         # dataframe = response.show_output_dataframe()
         # data_dict = dataframe.to_dict(orient='records')
         # json_data = json.dumps(data_dict)
-        
+        print("-"*200)
         print(response)  # Salida de depuración
-        
-        return response
+    
+        return response.sql_string

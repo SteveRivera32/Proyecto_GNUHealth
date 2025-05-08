@@ -106,13 +106,13 @@ async def chat_completions(request: ChatCompletionRequest, authorization: str = 
     # En caso de que el modelo no soporte streaming, se devuelve la respuesta completa
     # En caso de que el modelo no soporte streaming, se devuelve la respuesta completa
     # En caso de que el modelo no soporte streaming, se devuelve la respuesta completa
-    if  True:
+    if  stream==True:
         answer = agent.generate_natural_response_stream(request.messages[-1].content)
         return StreamingResponse(stream_response(answer,request.model,chat_id,time.time()), media_type="text/event-stream")
 
     else:
         # Devolver la respuesta formateada como si fuera OpenAI API
-        answer = agent.generate_natural_response(request.messages[-1].content)
+        answer = agent.generate_sql_response(request.messages[-1].content)
         return {
             "id":chat_id ,
             "object": "chat.completion",

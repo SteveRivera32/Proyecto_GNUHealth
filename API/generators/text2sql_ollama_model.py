@@ -55,6 +55,7 @@ class Text2SQLGeneratorOllama(Text2SQLGeneratorBase):
     @property
     def load_client(self):
         # Retorna el cliente Ollama para conectarse al modelo
+        print(os.getenv("OLLAMA_URL", "http://localhost:11434"))
         return Client(host=os.getenv("OLLAMA_URL", "http://localhost:11434"))
     
     @property
@@ -101,4 +102,5 @@ class Text2SQLGeneratorOllama(Text2SQLGeneratorBase):
         )["message"]["content"]
 
         # Retorna la respuesta postprocesada si es necesario
+        print(response)
         return self.postprocess(output_string=response) if postprocess else response
