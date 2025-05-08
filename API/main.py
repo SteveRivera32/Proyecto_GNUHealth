@@ -18,13 +18,31 @@ load_dotenv()
 app = FastAPI()
 
 # Middleware para permitir solicitudes desde otras fuentes (CORS)
+# Updated CORS settings to allow all origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.getenv("OPENWEB_UI_URL")],  # Reemplazar con dominio real en producción
+    allow_origins=["*"],  # Allows all origins
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
 )
+
+# Alternatively, you can specify specific origins if you know them:
+# origins = [
+#     "http://localhost",
+#     "http://localhost:8080",
+#     "http://127.0.0.1",
+#     "http://127.0.0.1:8080",
+#     "https://your-production-domain.com",
+# ]
+# 
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=origins,
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 
 # Endpoint para procesar prompts y devolver respuestas en formato PromptResponse
 @app.post("/ask", response_model=PromptResponse)
