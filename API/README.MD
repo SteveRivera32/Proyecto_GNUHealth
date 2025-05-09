@@ -13,6 +13,11 @@ tambien deberas activar elentorno con `conda activate` y usar `pip` para instala
    conda create --name <nombre_del_entorno> python=3.11
    conda activate <nombre_del_entorno>
    pip install -r requirements.txt
+   pip install openai
+   pip install ollama
+   pip install tabulate
+   pip install "fastapi[standard]"
+   pip install "uvicorn[standard]"
 
 
 ```
