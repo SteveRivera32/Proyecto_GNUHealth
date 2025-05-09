@@ -105,6 +105,9 @@ class Agent:
         # Convertir a Markdown
         markdown_table = tabulate(rows, headers="keys", tablefmt="github")
         print(markdown_table)
+
+
+        response = self.agent(f"/query {question}")
         
     
         return response.sql_string+"\n"+markdown_table
