@@ -93,7 +93,7 @@ class Agent:
       
 
         # Convertir a Markdown
-        markdown_table = tabulate(response.output_dataframe, headers="keys", tablefmt="github")
+        markdown_table = tabulate(response.sql_output_dataframe, headers="keys", tablefmt="github")
         print(markdown_table)
     
         return response.sql_string+"\n"+markdown_table
