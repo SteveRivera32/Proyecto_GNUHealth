@@ -2,7 +2,7 @@ from premsql.agents import BaseLineAgent
 from generators.text2sql_ollama_model import Text2SQLGeneratorOllama
 from generators.text2sql_google_model import Text2SQLGeneratorOpenAI
 from premsql.agents.tools import SimpleMatplotlibTool
-from premsql.executors import SQLiteExecutor
+from premsql.executors import ExecutorUsingLangChain
 from generators.natural_ollama_model import TextGenerator 
 import pandas as pd
 import os
@@ -35,20 +35,19 @@ class Agent:
         
         #self.text_generator = TextGenerator(model_name=model_name)
         self.text_generator= Text2SQLGeneratorOpenAI(
-             Text2SQLGeneratorOpenAI(
-             model_name="gemma-3-27b-it",  # or your preferred model
+             model_name=model_name,   # or your preferred model
              experiment_name="testing_openai",
              type="test",
-             openai_api_key=os.getenv("OPENAI_API_KEY")  )
+             openai_api_key=os.getenv("OPENAI_API_KEY")  
              )
         
         self.agent = BaseLineAgent(
             session_name="testing_ollama",
             db_connection_uri="sqlite:///california_schools.sqlite",
             specialized_model1=self.text_generator,
-            specialized_model2=self.text_generatorl,
+            specialized_model2=self.text_generator,
             plot_tool=SimpleMatplotlibTool(),
-            executor=SQLiteExecutor()
+            executor=ExecutorUsingLangChain()
         )
     
     def generate_natural_response_stream(self, question: str) -> str:
