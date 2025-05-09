@@ -107,7 +107,7 @@ class Agent:
         print(markdown_table)
 
 
-        response = self.agent(f"/query {question}")
+        response = self.agent(f"/query {question}, always add the significant table to the output, exclude rows with null values, statscore table contans the schools statistics and schools table contain schoo information")
         
     
         return response.sql_string+"\n"+markdown_table
