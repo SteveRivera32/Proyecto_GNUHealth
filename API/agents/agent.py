@@ -83,17 +83,28 @@ class Agent:
                   (Opcionalmente puede adaptarse para devolver dict o JSON)
         """
         response = self.agent(f"/query {question}")
-        
-        # Para devolver resultados en JSON, descomenta lo siguiente:
-        # dataframe = response.show_output_dataframe()
-        # data_dict = dataframe.to_dict(orient='records')
-        # json_data = json.dumps(data_dict)
-        print("-"*200)
-        print(response)  # Salida de depuración
-      
 
+        
+        
+        
+      
+        data=response.sql_output_dataframe
+        cols=data.get("columns")
+        values=data.get("data")
+        # Determinar número de filas
+        
+        print(data)
+        num_rows = max(len(v) for v in values.values())
+        
+        # Construir lista de filas como diccionarios
+        rows = []
+        for i in range(num_rows):
+            row = {col: values[col].get(i, "") for col in cols}
+            rows.append(row)
+        
         # Convertir a Markdown
-        markdown_table = tabulate(response.sql_output_dataframe, headers="keys", tablefmt="github")
+        markdown_table = tabulate(rows, headers="keys", tablefmt="github")
         print(markdown_table)
+        
     
         return response.sql_string+"\n"+markdown_table
