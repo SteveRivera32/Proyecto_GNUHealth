@@ -7,7 +7,9 @@ git clone https://github.com/tu-usuario/Proyecto_GNUHealth.git
 cd Proyecto_GNUHealth
 
 ```
-Si usas conda crea un ambiente nuevo `venve` haciendo uso de 
+# Opcion 1 instalacion con Anaccondaonda
+
+Si usas Anaconda crea un ambiente nuevo `venve` haciendo uso de 
 tambien deberas activar elentorno con `conda activate` y usar `pip` para instalar las dependencias.
 ```bash
    conda create --name <nombre_del_entorno> python=3.11
@@ -21,7 +23,7 @@ tambien deberas activar elentorno con `conda activate` y usar `pip` para instala
 
 
 ```
-
+# Opcion 2 Instalacion via python venv
 Si usas python venv deberas tener instalado python 3.11 y crear un python `venv`
 usand:
 ```bash
@@ -39,23 +41,36 @@ source ../venv/bin/activate
 pip install -r requirements.txt
 pip install ollama
 pip install -U premsql
-pip install "fastapi["standard"]"
+pip install "fastapi[standard]"
 pip install "uvicorn[standard]"
 pip install tabulate
+pip install OpenAi
 ```
 
 
 una vez las dependencias esten instaladas deberas correr en la carpeta de `API`
  ```bash
+ cd API
 fastapi dev main.py
 ```
-Tambien puedes es correr este omcnado en lugar de fastapi para habilitar conexion de todos los puertos
+Tambien puedes es correr este comando en lugar de fastapi para habilitar conexion de todos los puertos
 ```bash 
+cd API
 uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 en open web ui deberas agregar la url de la API `https://localhost:8000`
 
 
+# Configurando Variables de entorno:
+ir al archivo `.venv` en la carpeta del proyecto.
+```
+OPENWEB_UI_URL=http://localhost:3000
+MODEL_NAME=tinyllama
+OLLAMA_URL=http://localhost:11434
+OPENAI_API_KEY=<API_KEY>
+
+
+```
 
 
 # Text Streamng in Open AI API:
