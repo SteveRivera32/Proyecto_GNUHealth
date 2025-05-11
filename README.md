@@ -27,7 +27,7 @@ Antes de comenzar, asegúrate de tener instalado en tu máquina:
 
     En WSL:
     ```bash
-    ollama run <nombre_del_modelo>
+    ollama pull <nombre_del_modelo>
 
 3. **Descargar imágenes y levantar contenedores**
 
@@ -49,3 +49,10 @@ Antes de comenzar, asegúrate de tener instalado en tu máquina:
     
     ```bash
     docker-compose down
+
+
+# Documentacion Adicional:
+
+["Docuemtnacion de PremSQL"]("https://docs.premai.io/premsql/introduction")
+
+
