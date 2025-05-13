@@ -1,3 +1,6 @@
+# ⚠️ Advertencia
+La branch "main" no está actualizada todavía, la funcional es "fixing_code_issues"
+
 # 🧠 Asistente Virtual con Open WebUI + Ollama
 
 Este proyecto usa [Open WebUI](https://github.com/open-webui/open-webui) como interfaz para interactuar con modelos LLM locales a través de [Ollama](https://ollama.com/), todo dentro de contenedores Docker para facilitar su instalación y uso en equipo.
