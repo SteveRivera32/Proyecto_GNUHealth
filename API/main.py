@@ -81,7 +81,7 @@ available_models = [
     },
        {
         "id": "gemma3:4b",
-        "object": "model",
+        "object": "mdel",
         "created": 2,
         "owned_by": "premai-open-source"
     }, {
