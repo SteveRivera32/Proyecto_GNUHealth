@@ -74,13 +74,18 @@ available_models = [
         "owned_by": "premai-open-source"
     },
        {
-        "id": "gemma2",
+        "id": "gemma-3-27b-it",
         "object": "model",
         "created": 2,
         "owned_by": "premai-open-source"
     },
        {
         "id": "gemma3:4b",
+        "object": "mdel",
+        "created": 2,
+        "owned_by": "premai-open-source"
+    }, {
+        "id": "gemini-2.5-flash-preview-04-17",
         "object": "model",
         "created": 2,
         "owned_by": "premai-open-source"
