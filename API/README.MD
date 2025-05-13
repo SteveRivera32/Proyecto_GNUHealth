@@ -28,7 +28,7 @@ Si usas python venv deberas tener instalado python 3.11 y crear un python `venv`
 usand:
 ```bash
 # Crear un entorno virtual de Python (venv) llamado "venv" en el directorio padre de "API"
-python3 -m venv ../venv
+python3 -m venv ./venv
 
 # Navegar al directorio "API"
 cd API
