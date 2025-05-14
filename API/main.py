@@ -125,7 +125,6 @@ async def chat_completions(request: ChatCompletionRequest, authorization: str = 
         try:
             answer = agent.generate_sql_response(request.messages[-1].content)
 
-
         except:
             answer="Sorry am not able to generate this at the moment."
         
