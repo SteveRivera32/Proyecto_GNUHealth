@@ -4,6 +4,7 @@ from generators.text2sql_google_model import Text2SQLGeneratorOpenAI
 from premsql.agents.tools import SimpleMatplotlibTool
 from executors.postgre_executor import PostgreSQLExecutor
 from generators.natural_ollama_model import TextGenerator 
+from premsql.executors import ExecutorUsingLangChain
 import pandas as pd
 import os
 from tabulate import tabulate
@@ -34,22 +35,26 @@ class Agent:
         )
         
         #self.text_generator = TextGenerator(model_name=model_name)
-        self.text_generator= Text2SQLGeneratorOpenAI(
-             model_name=model_name,   # or your preferred model
-             experiment_name="testing_openai",
-             type="test",
-             openai_api_key=os.getenv("OPENAI_API_KEY")  
-             )
+        #self.text_generator= Text2SQLGeneratorOpenAI(
+        #     model_name=model_name,   # or your preferred model
+        #     experiment_name="testing_openai",
+        #     type="test",
+        #     openai_api_key=os.getenv("OPENAI_API_KEY")  
+        #     )
         
+
+        url = "postgresql://postgres:postgres@localhost:5432/db"
         self.agent = BaseLineAgent(
             session_name="testing_ollama",
-            db_connection_uri="sqlite:///california_schools.sqlite",
-            specialized_model1=self.text_generator,
-            specialized_model2=self.text_generator,
+            db_connection_uri="postgresql://admin:gnusolidario@localhost:5432/ghdemo44",
+            specialized_model1=self.model,
+            specialized_model2=None,
             plot_tool=SimpleMatplotlibTool(),
-            executor=PostgreSQLExecutor()
+            executor=ExecutorUsingLangChain(),
         )
     
+
+
     def generate_natural_response_stream(self, question: str) -> str:
         """
         Genera una respuesta en lenguaje natural para una pregunta dada.
@@ -91,7 +96,11 @@ class Agent:
                   (Opcionalmente puede adaptarse para devolver dict o JSON)
         """
         response = self.agent(f"/query {question}"+". This is a Postgre SQL database.")
-
+        print("*"*20)
+        print(question)
+        print(response.sql_string)
+        print("*"*20)
+        
         
         
         
