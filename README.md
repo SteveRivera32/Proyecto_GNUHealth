@@ -30,7 +30,7 @@ Antes de comenzar, asegúrate de tener instalado en tu máquina:
 
     En WSL:
     ```bash
-    ollama run <nombre_del_modelo>
+    ollama pull <nombre_del_modelo>
 
 3. **Descargar imágenes y levantar contenedores**
 
@@ -54,6 +54,7 @@ Antes de comenzar, asegúrate de tener instalado en tu máquina:
     docker-compose down
 
 
+<<<<<<< HEAD
 6. **Levantar Open AI endpoints**
  Para correr la apiu deberas bajar el repositiorio:
 ```bash 
@@ -100,5 +101,10 @@ fastapi dev main.py
 en open web ui deberas agregar la url de la API `https://localhost:8000`
 ![image](https://github.com/user-attachments/assets/73f3c7f6-aae3-433a-a827-c83d2aa14bdc)
 
+=======
+# Documentacion Adicional:
+
+["Docuemtnacion de PremSQL"]("https://docs.premai.io/premsql/introduction")
+>>>>>>> fixing_code_issues
 
 

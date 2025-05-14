@@ -1,3 +1,30 @@
+.config
+secrets.json
+my_private_keys.pem
+
+
+# Python virtual environment folders
+venv/
+.venv/
+env/
+.env/
+
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# pip and conda install logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# VS Code settings (optional, but common)
+.vscode/
+
+# Conda environment metadata (optional if not in repo)
+*.conda
+*.env
+
 # Created by https://www.toptal.com/developers/gitignore/api/python,venv
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,venv
 
