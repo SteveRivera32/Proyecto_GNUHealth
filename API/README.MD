@@ -7,19 +7,19 @@ git clone https://github.com/tu-usuario/Proyecto_GNUHealth.git
 cd Proyecto_GNUHealth
 
 ```
-# Opcion 1 instalacion con Anaccondaonda
+# Opcion 1 instalacion con Anaconda
 
 Si usas Anaconda crea un ambiente nuevo `venve` haciendo uso de 
 tambien deberas activar elentorno con `conda activate` y usar `pip` para instalar las dependencias.
 ```bash
    conda create --name <nombre_del_entorno> python=3.11
    conda activate <nombre_del_entorno>
-   pip install -r requirements.txt
-   pip install openai
    pip install ollama
-   pip install tabulate
+   pip install -U premsql
    pip install "fastapi[standard]"
    pip install "uvicorn[standard]"
+   pip install tabulate
+   pip install OpenAi
 
 
 ```
@@ -38,7 +38,6 @@ cd API
 source ../venv/bin/activate
 
 # Instalar las dependencias desde requirements.txt
-pip install -r requirements.txt
 pip install ollama
 pip install -U premsql
 pip install "fastapi[standard]"
@@ -56,7 +55,7 @@ fastapi dev main.py
 Tambien puedes es correr este comando en lugar de fastapi para habilitar conexion de todos los puertos
 ```bash 
 cd API
-uvicorn main:app --host 0.0.0.0 --port 8000
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 en open web ui deberas agregar la url de la API `https://localhost:8000`
 

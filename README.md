@@ -1,5 +1,8 @@
-# ⚠️ Advertencia
-La branch "main" no está actualizada todavía, la funcional es "fixing_code_issues"
+
+![Static Badge](https://img.shields.io/badge/python-3.11%5E-green)
+![Static Badge](https://img.shields.io/badge/version-0.1-red)
+
+
 
 # 🧠 Asistente Virtual con Open WebUI + Ollama
 
@@ -13,8 +16,11 @@ Antes de comenzar, asegúrate de tener instalado en tu máquina:
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop) (incluye Docker y Docker Compose)
 - (Opcional, pero recomendado) Git
+- Configurar la API ([Documentación](API/README.md))
 
 > Docker Desktop debe estar corriendo, y habilitada la integración con WSL si usas Linux por medio de Windows.
+
+
 
 ---
 
