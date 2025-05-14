@@ -70,7 +70,13 @@ OPENAI_API_KEY=<API_KEY>
 
 
 ```
+> Nota: Para  deberan hace que git omita los cambios del archivo .env
+utlizando los comandos:
 
+```
+git rm .env --cached
+git commit -m "Stopped tracking .env File"
+```
 
 # Text Streamng in Open AI API:
 
