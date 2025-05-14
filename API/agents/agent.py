@@ -90,7 +90,7 @@ class Agent:
             Any: Resultado de la ejecución de la consulta SQL o error generado.
                   (Opcionalmente puede adaptarse para devolver dict o JSON)
         """
-        response = self.agent(f"/query {question}")
+        response = self.agent(f"/query {question}"+". This is a Postgre SQL database.")
 
         
         
