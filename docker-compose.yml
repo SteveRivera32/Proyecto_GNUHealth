@@ -21,6 +21,26 @@ services:
       - ollama-data:/root/.ollama
     restart: always
 
+  db:
+    build: .
+    restart: always
+    environment:
+      POSTGRES_DB: ghdemo44
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: gnusolidario
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./install_demo_database.sh:/docker-entrypoint-initdb.d/install_demo_database.sh
+    ports:
+    - "5432:5432"  # Exposing PostgreSQL to the host
+
+  adminer:
+    image: adminer:latest
+    restart: always
+    ports:
+      - 8080:8080
+
 volumes:
   openwebui-data:
   ollama-data:
+  pgdata:

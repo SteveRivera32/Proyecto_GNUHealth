@@ -2,7 +2,7 @@ from premsql.agents import BaseLineAgent
 from generators.text2sql_ollama_model import Text2SQLGeneratorOllama
 from generators.text2sql_google_model import Text2SQLGeneratorOpenAI
 from premsql.agents.tools import SimpleMatplotlibTool
-from premsql.executors import ExecutorUsingLangChain
+from executors.postgre_executor import PostgreSQLExecutor
 from generators.natural_ollama_model import TextGenerator 
 import pandas as pd
 import os
@@ -47,7 +47,7 @@ class Agent:
             specialized_model1=self.text_generator,
             specialized_model2=self.text_generator,
             plot_tool=SimpleMatplotlibTool(),
-            executor=ExecutorUsingLangChain()
+            executor=PostgreSQLExecutor()
         )
     
     def generate_natural_response_stream(self, question: str) -> str:
