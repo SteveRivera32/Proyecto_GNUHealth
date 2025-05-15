@@ -122,11 +122,11 @@ async def chat_completions(request: ChatCompletionRequest, authorization: str = 
 
     else:
         # Devolver la respuesta formateada como si fuera OpenAI API
-        try:
-            answer = agent.generate_sql_response(request.messages[-1].content)
+    
+        answer = agent.generate_sql_response(request.messages[-1].content)
 
-        except:
-            answer="Sorry am not able to generate this at the moment."
+        
+        #answer="Sorry am not able to generate this at the moment."
         
    
         return {

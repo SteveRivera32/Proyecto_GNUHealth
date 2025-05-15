@@ -4,3 +4,5 @@ fastapi[standard]
 uvicorn[standard]
 tabulate
 openai
+pg8000
+psycopg2-binary 

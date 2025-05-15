@@ -2,7 +2,6 @@ import os
 from typing import Optional
 
 from premsql.generators.base import Text2SQLGeneratorBase
-
 try:
     from openai import OpenAI
 except ImportError:
