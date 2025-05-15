@@ -78,6 +78,72 @@ git rm .env --cached
 git commit -m "Stopped tracking .env File"
 ```
 
+
+# Configuracion de la base de datos:
+Deberas descargar una de las copias de base de datso de gnu health
+gnuhealth-44-demo.sql.gz
+
+[Descargar Demos](https://www.gnuhealth.org/downloads/postgres_dumps/)
+
+correr el siguiente comando:
+```
+docker build -t proyecto_gnuhealth-db .
+```
+
+luego para construir el container:
+
+ATENCION: el siguiente comando deberas correrlo en caso de que no tengas 
+los containers de OpenWeb UI y Ollama.
+
+```
+docker-compose up -d 
+```
+
+
+
+
+
+Pon el arhivo `gz` en el directorio del proyecto.
+Abre docker:
+```
+docker cp gnuhealth-44-demo.sql.gz <container_id>:/tmp/
+```
+Ejecuta `docker ps` para ver los containers  y busca el id del proyecto gnu_health
+```
+docker exec -it <container_id> bash
+```
+Correr los siguientes dos comandos 
+```
+gunzip /tmp/gnuhealth-44-demo.sql.gz
+
+# Import into the correct DB (e.g., ghdemo44)
+psql -U admin -d ghdemo44 -f /tmp/gnuhealth-44-demo.sql
+
+```
+y por ultimo:
+```
+\dt 
+```
+
+listara las tablas de la base de datos.
+
+> NOTA: Como recordatorio las credenciales de la base de datos son:
+
+**Database:** ghdemo44
+
+**Username:** admin
+
+**Password:** gnusolidario
+
+posgre corre en el puerto que 5432 
+Adminer correra en el puerto 8080 y ahi podran visualizar la base de datos
+En docker el  `Host` de los containers es el nombre, si usan adminer colocar 
+la siguiente direccion en el campo server `nombre-container:5432`
+
+
+
+
+
 # Text Streamng in Open AI API:
 
 
