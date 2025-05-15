@@ -1,8 +1,12 @@
 
 ![Static Badge](https://img.shields.io/badge/python-3.11%5E-green)
 ![Static Badge](https://img.shields.io/badge/version-0.1-red)
+![Static Badge](https://img.shields.io/badge/nuevas_dependencias-red)
 
-
+# Atención
+El proyecto esta configurado por defecto para conectarse a Ollama, recuerden editar .env file y asegurarse que ollama este corriendo y seleccionar
+modelo que tengan instalados. En la API /`main.py` pueden modificar la lista actual de modelos.
+Deberan revisar la nueva  ([Documentación](API/README.md)) de la API para instalar la base de datos de GNU Health en docker.
 
 # 🧠 Asistente Virtual con Open WebUI + Ollama
 
