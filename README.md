@@ -15,7 +15,7 @@ Antes de comenzar, asegurarse de tener instalado:
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop) (incluye Docker y Docker Compose)
 - WSL
-
+- Ollama
 
 > Docker Desktop debe estar corriendo, y habilitada la integración con WSL si usas Linux por medio de Windows.
 
@@ -68,7 +68,7 @@ Antes de comenzar, asegurarse de tener instalado:
     pip install psycopg2-binary 
     ```
 
-    Para desactivar el entorno venv:
+    **NOTA:** Para desactivar el entorno venv:
     ```bash
     deactivate
 
@@ -83,17 +83,40 @@ Antes de comenzar, asegurarse de tener instalado:
     
     En el caso que el puerto 8000 ya esté siendo usado, se puede usar el 8001.
 
-    Para detenerla se usa "CTRL + C" en la terminal donde este corriendo.
+    **NOTA:** Para detenerla se usa "CTRL + C" en la terminal donde este corriendo.
 
-4. **Descargar imágenes y levantar contenedores**
+4. **Configurar base de datos**
 
    En otra terminal, en el directorio del proyecto:
    ```bash
-   docker-compose up -d
+   docker build -t proyecto_gnuhealth-db .
    ```
-    Esto levantará OpenWebUI en el puerto 3000.
 
-    Para reiniciar o detener los contenedores (en el directorio del proyecto):
+    Levantar contenedor de OpenWebUI:
+    ```bash
+    docker-compose up -d 
+    ```
+    >Esto levantará OpenWebUI en el puerto 3000.
+
+    Poner el arhivo gz en el directorio del proyecto:
+    ```bash
+    docker cp gnuhealth-44-demo.sql.gz <container_id>:/tmp/
+    ```
+
+    Ver los containers:
+    ```bash
+    docker ps
+    ```
+
+    Aquí buscar el ID de la imagen llamada "proyecto_gnuhealth-db". Copiarla y ejecutar los siguientes comandos:
+    ```bash
+    docker cp gnuhealth-44-demo.sql.gz <container_id>:/tmp/
+    docker exec -it <container_id> bash
+    gunzip /tmp/gnuhealth-44-demo.sql.gz
+    psql -U admin -d ghdemo44 -f /tmp/gnuhealth-44-demo.sql
+    ```
+
+    **NOTA:** Para reiniciar o detener los contenedores (en el directorio del proyecto):
     ```bash
     docker-compose restart
     ```
@@ -111,9 +134,36 @@ Antes de comenzar, asegurarse de tener instalado:
 
     ![image](https://github.com/user-attachments/assets/73f3c7f6-aae3-433a-a827-c83d2aa14bdc)
 
-    Por último deben apretar en "controles" (ícono al lado de las opciones de usuario) y desactivar "Transmisión Directa de la Respuesta del Chat".
+    Por último abajo a la izquierda en su usuario, ir a "administración", luego a ajustes, luego conexiones y desactivar "API Ollama".
 
     Para saber si funciona la conexión con la API, revisar si ya aparecen modelos.
 
+6. **Cambiar archivo .env**
 
+    En el directorio del proyecto deberá aparecer un archivo .env (si no está crearlo). Aquí se debe colocar lo siguiente:
+    ```bash
+    OPENWEB_UI_URL=http://localhost:3000
+    MODEL_NAME=<model_name>
+    OLLAMA_URL=http://localhost:11434
+    OPENAI_API_KEY=<key>
+    ```
 
+7. **Correr Ollama localmente**
+
+    En una nueva terminal, correr:
+    En el directorio del proyecto deberá aparecer un archivo .env (si no está crearlo). Aquí se debe colocar lo siguiente:
+    ```bash
+    ollama run <model_name>
+    ```
+
+    Recomendamos usar el modelo: **anindya/prem1b-sql-ollama-fp116**:
+    En el directorio del proyecto deberá aparecer un archivo .env (si no está crearlo). Aquí se debe colocar lo siguiente:
+    ```bash
+    ollama run anindya/prem1b-sql-ollama-fp116
+    ```
+
+8. **Probar el proyecto**
+
+    Para probar si funciona, deben primero apretar en "controles" (ícono al lado de las opciones de usuario) y desactivar "Transmisión Directa de la Respuesta del Chat".
+
+    De esta manera ya debería funcionar mandarle un prompt. Importante recordar que el modelo no mantiene una conversación, solo responde a peticiones sobre la base de datos.

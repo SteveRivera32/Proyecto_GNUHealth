@@ -12,15 +12,6 @@ services:
       - "host.docker.internal:host-gateway"
     restart: always
 
-  ollama:
-    image: ollama/ollama
-    container_name: ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama-data:/root/.ollama
-    restart: always
-
   db:
     build: .
     restart: always
@@ -42,5 +33,4 @@ services:
 
 volumes:
   openwebui-data:
-  ollama-data:
   pgdata:
