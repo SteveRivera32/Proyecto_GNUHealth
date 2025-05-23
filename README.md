@@ -3,6 +3,13 @@
 ![Static Badge](https://img.shields.io/badge/version-0.1-red)
 ![Static Badge](https://img.shields.io/badge/nuevas_dependencias-red)
 
+
+
+# Atención
+El proyecto esta configurado por defecto para conectarse a Ollama, recuerden editar .env file y asegurarse que ollama este corriendo y seleccionar
+modelo que tengan instalados. En la API /`main.py` pueden modificar la lista actual de modelos.
+Deberan revisar la nueva  ([Documentación](API/README.md)) de la API para instalar la base de datos de GNU Health en docker.
+
 # 🧠 Asistente Virtual con Open WebUI + Ollama
 
 Este proyecto usa [Open WebUI](https://github.com/open-webui/open-webui) como interfaz para interactuar con modelos LLM locales a través de [Ollama](https://ollama.com/), todo dentro de contenedores Docker para facilitar su instalación y uso en equipo.
