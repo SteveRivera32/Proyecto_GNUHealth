@@ -1,0 +1,146 @@
+base) diegocarcamo@Diegos-MacBook-Air Proyecto_GNUHealth % conda deactivate
+diegocarcamo@Diegos-MacBook-Air Proyecto_GNUHealth % conda activate
+(base) diegocarcamo@Diegos-MacBook-Air Proyecto_GNUHealth % conda deactivate
+diegocarcamo@Diegos-MacBook-Air Proyecto_GNUHealth % source venv/bin/activate
+(venv) diegocarcamo@Diegos-MacBook-Air Proyecto_GNUHealth % cd api
+(venv) diegocarcamo@Diegos-MacBook-Air api % uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+INFO:     Will watch for changes in these directories: ['/Users/diegocarcamo/Documents/Proyecto_GNUHealth/API']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [19050] using WatchFiles
+2025-05-23 08:34:27,617 - [UTILS] - WARNING - Unable to use transformers. Install using: pip install transformers
+2025-05-23 08:34:27,618 - [HF-GENERATOR] - WARNING - Ensure torch and transformers are installed.
+2025-05-23 08:34:27,618 - [HF-GENERATOR] - WARNING - Install them by: pip install torch transformers
+2025-05-23 08:34:27,909 - [MLX-GENERATOR] - ERROR - Install mlx using: pip install mlx mlx-lm
+INFO:     Started server process [19052]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:54758 - "OPTIONS /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54758 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54838 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54849 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54854 - "OPTIONS /api/chat/completions HTTP/1.1" 200 OK
+2025-05-23 08:39:56,053 - [GENERATOR] - INFO - Experiment folder found in: /Users/diegocarcamo/Library/Caches/premsql/experiments/test/ollama
+http://localhost:11434
+2025-05-23 08:39:56,106 - [PIPELINE-MEMORY] - INFO - /Users/diegocarcamo/Documents/Proyecto_GNUHealth/API/premsql/premsql_pipeline_memory.db
+streaming (False,)
+2025-05-23 08:39:57,154 - [BASELINE-ROUTER] - INFO - Routing to: query
+/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/langchain_community/utilities/sql_database.py:338: SAWarning: Cannot correctly sort tables; there are unresolvable cycles between tables "account_move, account_move_line, account_move_reconciliation, calendar_calendar, company_company, company_employee, gnuhealth_birth_certificate, gnuhealth_death_certificate, gnuhealth_healthprofessional, gnuhealth_hp_specialty, gnuhealth_institution, gnuhealth_institution_specialties, gnuhealth_operation, gnuhealth_preoperative_assessment, gnuhealth_surgery, party_address, party_party, res_user, stock_location", which is usually caused by mutually dependent foreign key constraints.  Foreign key constraints involving these tables will not be considered; this warning may raise an error in a future release.
+  metadata_table_names = [tbl.name for tbl in self._metadata.sorted_tables]
+/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/langchain_community/utilities/sql_database.py:350: SAWarning: Cannot correctly sort tables; there are unresolvable cycles between tables "account_move, account_move_line, account_move_reconciliation, calendar_calendar, company_company, company_employee, gnuhealth_birth_certificate, gnuhealth_death_certificate, gnuhealth_healthprofessional, gnuhealth_hp_specialty, gnuhealth_institution, gnuhealth_institution_specialties, gnuhealth_operation, gnuhealth_preoperative_assessment, gnuhealth_surgery, party_address, party_party, res_user, stock_location", which is usually caused by mutually dependent foreign key constraints.  Foreign key constraints involving these tables will not be considered; this warning may raise an error in a future release.
+  for tbl in self._metadata.sorted_tables
+http://localhost:11434
+SELECT * FROM account_template;
+http://localhost:11434
+It seems like you're trying to access data from a table named 'account_template', which doesn't exist in your Postgres database schema. The correct column names for this query would be 'id', 'model_id', and possibly others depending on the actual structure of your tables, but without knowing those details it's hard to provide an accurate SQL statement. 
+
+Please check if there is a table named 'account_template'. If not you can create one by using below command:  
+CREATE TABLE account_template (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(255), description TEXT);    ## This will generate an auto incrementing primary key id. You may need to adjust it according your needs.  If you don't want the 'name', and only use 'description'. In that case replace `VARCHAR` with just a comma: ', description VARCHAR(255)');  
+
+http://localhost:11434
+It seems like you're trying to access data from a table named 'account_template', which doesn't exist in your Postgres database schema. The correct column names for this query would be 'id', 'model_id', and possibly others depending on the actual structure of your tables, but without knowing those details it's hard to provide an accurate SQL statement. 
+
+Please check if there is a table named 'account_template'. If not you can create one by using below command:  
+CREATE TABLE account_template (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(255), description TEXT);    ## This will generate id as primary key and auto increment.  You may need to adjust it according your needs. If you don't want an 'autoincrement', then use this command:   CREATE TABLE account_template (id INTEGER PRIMARY KEY, name VARCHAR(255), description TEXT);   
+
+http://localhost:11434
+It seems like you're trying to access data from a table named 'account_template', but PostgreSQL doesn't recognize this as such. If your intention is to select all fields (columns) of an entry in the account template, then try using SELECT * FROM account_template; This will return every field for that row if it exists or nothing otherwise depending on whether there are any entries with 'account_template'.
+
+http://localhost:11434
+It seems like you're trying to access data from a table named 'account_template', but PostgreSQL doesn't recognize this as such. If your intention is to select all fields (columns) of an entry in the account template, then it should be something along these lines: 
+SELECT * FROM account_template; This will return every field for each row found within that table. Please ensure you have correct column names and also check if there are any spelling mistakes or case sensitivity issues as this might cause errors depending on your database schema design. If the issue persists, please provide more context about what exactly is being asked in order to assist further with it.
+
+2025-05-23 08:41:11,999 - [BASELINE-TEXT2SQL-WORKER] - INFO - => Going for final correction ...
+http://localhost:11434
+SELECT * FROM account_template;This will return every field for each row found within that table. Please ensure you have correct column names and also check if there are any spelling mistakes or case sensitivity issues as this might cause errors depending on your database schema design. If the issue persists, please provide more context about what exactly is being asked in order to assist further with it.
+
+2025-05-23 08:41:21,941 - [PIPELINE-MEMORY] - INFO - Pushed to the database
+********************
+list elements in the accoun template table?
+SELECT * FROM account_template;This will return every field for each row found within that table. Please ensure you have correct column names and also check if there are any spelling mistakes or case sensitivity issues as this might cause errors depending on your database schema design. If the issue persists, please provide more context about what exactly is being asked in order to assist further with it.
+********************
+{'data': {}, 'columns': []}
+INFO:     127.0.0.1:54854 - "POST /api/chat/completions HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/uvicorn/protocols/http/httptools_impl.py", line 409, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+    raise exc
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+    await self.app(scope, receive, _send)
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+    raise exc
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+    await route.handle(scope, receive, send)
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+    await self.app(scope, receive, send)
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+    raise exc
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+    await app(scope, receive, sender)
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/API/main.py", line 126, in chat_completions
+    answer = agent.generate_sql_response(request.messages[-1].content)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/diegocarcamo/Documents/Proyecto_GNUHealth/API/agents/agent.py", line 114, in generate_sql_response
+    num_rows = max(len(v) for v in values.values())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: max() arg is an empty sequence
+INFO:     127.0.0.1:55599 - "OPTIONS /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55599 - "GET /api/models HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55599 - "OPTIONS /api/chat/completions HTTP/1.1" 200 OK
+2025-05-23 08:43:21,582 - [GENERATOR] - INFO - Experiment folder found in: /Users/diegocarcamo/Library/Caches/premsql/experiments/test/ollama
+http://localhost:11434
+2025-05-23 08:43:21,597 - [PIPELINE-MEMORY] - INFO - /Users/diegocarcamo/Documents/Proyecto_GNUHealth/API/premsql/premsql_pipeline_memory.db
+streaming (False,)
+2025-05-23 08:43:22,185 - [BASELINE-ROUTER] - INFO - Routing to: query
+/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/langchain_community/utilities/sql_database.py:338: SAWarning: Cannot correctly sort tables; there are unresolvable cycles between tables "account_move, account_move_line, account_move_reconciliation, calendar_calendar, company_company, company_employee, gnuhealth_birth_certificate, gnuhealth_death_certificate, gnuhealth_healthprofessional, gnuhealth_hp_specialty, gnuhealth_institution, gnuhealth_institution_specialties, gnuhealth_operation, gnuhealth_preoperative_assessment, gnuhealth_surgery, party_address, party_party, res_user, stock_location", which is usually caused by mutually dependent foreign key constraints.  Foreign key constraints involving these tables will not be considered; this warning may raise an error in a future release.
+  metadata_table_names = [tbl.name for tbl in self._metadata.sorted_tables]
+/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/langchain_community/utilities/sql_database.py:350: SAWarning: Cannot correctly sort tables; there are unresolvable cycles between tables "account_move, account_move_line, account_move_reconciliation, calendar_calendar, company_company, company_employee, gnuhealth_birth_certificate, gnuhealth_death_certificate, gnuhealth_healthprofessional, gnuhealth_hp_specialty, gnuhealth_institution, gnuhealth_institution_specialties, gnuhealth_operation, gnuhealth_preoperative_assessment, gnuhealth_surgery, party_address, party_party, res_user, stock_location", which is usually caused by mutually dependent foreign key constraints.  Foreign key constraints involving these tables will not be considered; this warning may raise an error in a future release.
+  for tbl in self._metadata.sorted_tables
+http://localhost:11434
+SELECT * FROM account_tax_line_template;
+2025-05-23 08:43:33,337 - [PIPELINE-MEMORY] - INFO - Pushed to the database
+********************
+list elements in the account_tax_line_template table
+SELECT * FROM account_tax_line_template;
+********************
+{'columns': ['id', 'create_uid', 'create_date', 'tax', 'write_uid', 'amount', 'write_date', 'line', 'type'], 'data': {'id': {}, 'create_uid': {}, 'create_date': {}, 'tax': {}, 'write_uid': {}, 'amount': {}, 'write_date': {}, 'line': {}, 'type': {}}}
+
+2025-05-23 08:43:33,338 - [BASELINE-ROUTER] - INFO - Routing to: query
+/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/langchain_community/utilities/sql_database.py:338: SAWarning: Cannot correctly sort tables; there are unresolvable cycles between tables "account_move, account_move_line, account_move_reconciliation, calendar_calendar, company_company, company_employee, gnuhealth_birth_certificate, gnuhealth_death_certificate, gnuhealth_healthprofessional, gnuhealth_hp_specialty, gnuhealth_institution, gnuhealth_institution_specialties, gnuhealth_operation, gnuhealth_preoperative_assessment, gnuhealth_surgery, party_address, party_party, res_user, stock_location", which is usually caused by mutually dependent foreign key constraints.  Foreign key constraints involving these tables will not be considered; this warning may raise an error in a future release.
+  metadata_table_names = [tbl.name for tbl in self._metadata.sorted_tables]
+/Users/diegocarcamo/Documents/Proyecto_GNUHealth/venv/lib/python3.11/site-packages/langchain_community/utilities/sql_database.py:350: SAWarning: Cannot correctly sort tables; there are unresolvable cycles between tables "account_move, account_move_line, account_move_reconciliation, calendar_calendar, company_company, company_employee, gnuhealth_birth_certificate, gnuhealth_death_certificate, gnuhealth_healthprofessional, gnuhealth_hp_specialty, gnuhealth_institution, gnuhealth_institution_specialties, gnuhealth_operation, gnuhealth_preoperative_assessment, gnuhealth_surgery, party_address, party_party, res_user, stock_location", which is usually caused by mutually dependent foreign key constraints.  Foreign key constraints involving these tables will not be considered; this warning may raise an error in a future release.
+  for tbl in self._metadata.sorted_tables
+http://localhost:11434
+SELECT * FROM account_tax_line_template WHERE id IS NOT NULL;
+2025-05-23 08:43:41,087 - [PIPELINE-MEMORY] - INFO - Pushed to the database
+INFO:     127.0.0.1:55599 - "POST /api/chat/completions HTTP/1.1" 200 OK
