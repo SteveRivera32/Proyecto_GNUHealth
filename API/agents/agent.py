@@ -33,6 +33,8 @@ class Agent:
             experiment_name="ollama",
             type="test",
         )
+
+       
         
         #self.text_generator = TextGenerator(model_name=model_name)
         #self.text_generator= Text2SQLGeneratorOpenAI(
@@ -102,7 +104,14 @@ class Agent:
         print("*"*20)
         
         
-        
+        response = generator.generate_and_save_results(
+           dataset=bird_dataset,
+           temperature=0.1,
+           max_new_tokens=256,
+           force=True,
+           executor=ExecutorUsingLangChain(),
+           max_retries=5 # this is optional (default is already set to 5)
+        )     
         
       
         data=response.sql_output_dataframe
@@ -128,3 +137,4 @@ class Agent:
         
     
         return response.sql_string+"\n"+markdown_table
+    
