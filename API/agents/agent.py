@@ -97,21 +97,13 @@ class Agent:
             Any: Resultado de la ejecución de la consulta SQL o error generado.
                   (Opcionalmente puede adaptarse para devolver dict o JSON)
         """
-        response = self.agent(f"/query {question}"+". This is a Postgre SQL database.")
+        response = self.agent(f"/query {question}"+". This is a Postgre SQL database.",server_mode=True)
         print("*"*20)
         print(question)
         print(response.sql_string)
         print("*"*20)
         
-        
-        response = generator.generate_and_save_results(
-           dataset=bird_dataset,
-           temperature=0.1,
-           max_new_tokens=256,
-           force=True,
-           executor=ExecutorUsingLangChain(),
-           max_retries=5 # this is optional (default is already set to 5)
-        )     
+
         
       
         data=response.sql_output_dataframe
