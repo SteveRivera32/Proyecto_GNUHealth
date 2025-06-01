@@ -81,7 +81,7 @@ available_models = [
     },
        {
         "id": "gemma3:4b",
-        "object": "mdel",
+        "object": "model",
         "created": 2,
         "owned_by": "premai-open-source"
     }, {
@@ -95,6 +95,7 @@ available_models = [
 # Endpoint para listar modelos disponibles (para compatibilidad con clientes tipo OpenAI)
 @app.get("/api/models")
 async def list_models():
+    print("/api/models fue consultado")
     return JSONResponse(content={
         "object": "list",
         "data": available_models
@@ -103,41 +104,38 @@ async def list_models():
 # Endpoint de completación de chat estilo OpenAI (con respuesta generada por el modelo)
 @app.post("/api/chat/completions")
 async def chat_completions(request: ChatCompletionRequest, authorization: str = Header(default=None)):
-    # Crear agente y generar respuesta natural del modelo (último mensaje del usuario)
+    print("Recibido en /chat/completions")
+    print("Modelo:", request.model)
+    print("Mensajes:", [m.content for m in request.messages])
+
+    if not request.model or not request.messages:
+        print("Modelo o mensajes faltantes")
+        raise HTTPException(status_code=400, detail="Faltan datos requeridos: modelo o mensajes.")
 
     agent = ag.Agent(request.model)
-    
-    stream=request.stream,
-    chat_id="premSQLChat-" + hashlib.sha256(str(request.messages).encode()).hexdigest()[:24]
-    #Text streaming no soportado por el momento
-    print("streaming",stream)
+    chat_id = "premSQLChat-" + hashlib.sha256(str(request.messages).encode()).hexdigest()[:24]
 
-    #Vamos a realziar dejando este codgo como siempre boolean.
-    #Al parecer se necesta nvestigar sobre algunos metodos asincronos para este tipo de generacion.
- 
-    #Atencion la funcion de streaming esta rota desabilitar text-streamin en open web ui
-    if  stream==True:
-        answer = agent.generate_natural_response_stream(request.messages[-1].content)
-        return StreamingResponse(stream_response(answer,request.model,chat_id,time.time()), media_type="text/event-stream")
+    # Solo tomamos el último mensaje del usuario
+    user_question = request.messages[-1].content
+    decision = agent.decide_response_type(user_question)
 
+    if decision == "SQL":
+        answer = agent.generate_sql_response(user_question)
+    elif decision == "NATURAL":
+        answer = agent.generate_natural_response(user_question)
     else:
-        # Devolver la respuesta formateada como si fuera OpenAI API
-    
-        answer = agent.generate_sql_response(request.messages[-1].content)
+        answer = "No pude decidir cómo responder a tu pregunta."
 
-        
-        #answer="Sorry am not able to generate this at the moment."
-        
-   
-        return {
-            "id":chat_id ,
-            "object": "chat.completion",
-            "created": time.time(),
-            "model": request.model,
-            "choices": [{
-                "message": ChatMessage(role="assistant", content=answer),
-            }]
-        }
+    return {
+        "id": chat_id,
+        "object": "chat.completion",
+        "created": time.time(),
+        "model": request.model,
+        "choices": [{
+            "message": ChatMessage(role="assistant", content=answer),
+        }]
+    }
+
 
 # Soporte para solicitudes OPTIONS desde frontend (preflight)
 @app.options("/api/models")
