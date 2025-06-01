@@ -72,7 +72,8 @@ Antes de comenzar, asegurarse de tener instalado:
     pip install tabulate
     pip install openai
     pip install pg8000
-    pip install psycopg2-binary 
+    pip install psycopg2-binary
+    pip install sqlalchemy
     ```
 
     **NOTA:** Para desactivar el entorno venv:
