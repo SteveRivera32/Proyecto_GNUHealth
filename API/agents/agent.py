@@ -45,43 +45,141 @@ class Agent:
             executor=ExecutorUsingLangChain(),
         )
     
-    def get_schema_summary(self, limit_tables=10):
+    def get_schema_summary(self, question: str):
         """
-        Extrae el esquema de la base de datos PostgreSQL de tablas que comienzan con 'gnuhealth_'.
-        Devuelve un resumen textual como: tabla(columna1, columna2)
+        Extrae el esquema de tablas relevantes en base a la pregunta e incluye descripción de columnas si está disponible.
         """
         try:
             from sqlalchemy import create_engine, text
+            import re
 
-            # Conexión directa a la base de datos
+            # Detectar nombres de tabla en la pregunta
+            table_pattern = re.findall(r'\b(?:from|join|table)\s+([a-zA-Z_][\w]*)', question.lower())
+            keywords = set(table_pattern)
+
             engine = create_engine("postgresql://admin:gnusolidario@localhost:5432/ghdemo44")
-            with engine.connect() as connection:
-                result = connection.execute(text("""
-                    SELECT table_name, column_name
-                    FROM information_schema.columns
-                    WHERE table_schema = 'public' AND table_name LIKE 'gnuhealth_%'
-                    ORDER BY table_name, ordinal_position
+            tables = {}
+
+            with engine.connect() as conn:
+                # Obtener tablas relacionadas por claves foráneas
+                fk_result = conn.execute(text("""
+                    SELECT DISTINCT
+                        tc.table_name AS source_table,
+                        ccu.table_name AS target_table
+                    FROM 
+                        information_schema.table_constraints AS tc 
+                        JOIN information_schema.key_column_usage AS kcu
+                        ON tc.constraint_name = kcu.constraint_name
+                        JOIN information_schema.constraint_column_usage AS ccu
+                        ON ccu.constraint_name = tc.constraint_name
+                    WHERE 
+                        constraint_type = 'FOREIGN KEY' AND
+                        tc.table_schema = 'public';
                 """))
 
-                tables = {}
-                for row in result.fetchall():
-                    table = row[0]
-                    column = row[1]
-                    if table not in tables:
-                        tables[table] = []
-                    tables[table].append(column)
+                related_tables = set()
+                for row in fk_result.fetchall():
+                    source, target = row
+                    if source in keywords or target in keywords:
+                        related_tables.add(source)
+                        related_tables.add(target)
 
-            # Armar el texto final
-            schema_lines = []
-            for i, (table, columns) in enumerate(tables.items()):
-                if i >= limit_tables:
-                    break
-                schema_lines.append(f"{table}({', '.join(columns)})")
+                all_relevant_tables = keywords.union(related_tables)
 
+                # Obtener columnas y descripciones
+                if not all_relevant_tables:
+                    return "No se pudo extraer el esquema relacionado con la pregunta."
+
+                cols_result = conn.execute(text("""
+                    SELECT 
+                        cols.table_name, 
+                        cols.column_name, 
+                        pgd.description
+                    FROM 
+                        information_schema.columns cols
+                    LEFT JOIN 
+                        pg_catalog.pg_statio_all_tables st ON st.relname = cols.table_name
+                    LEFT JOIN 
+                        pg_catalog.pg_description pgd ON pgd.objoid = st.relid AND pgd.objsubid = cols.ordinal_position
+                    WHERE 
+                        cols.table_schema = 'public'
+                    ORDER BY 
+                        cols.table_name, cols.ordinal_position;
+                """))
+
+                for row in cols_result.fetchall():
+                    table, column, description = row
+                    if table in all_relevant_tables:
+                        if table not in tables:
+                            tables[table] = []
+                        if description:
+                            tables[table].append(f"{column} /* {description} */")
+                        else:
+                            tables[table].append(column)
+
+            # Agregar descripciones específicas de tablas conocidas
+            if "gnuhealth_ethnicity" in tables:
+                tables["gnuhealth_ethnicity"] = [
+                    "id",
+                    "name /* nombre descriptivo de la etnia */",
+                    "code /* código corto o clave técnica de la etnia */"
+                ]
+
+            if "gnuhealth_gender" in tables:
+                tables["gnuhealth_gender"] = [
+                    "id",
+                    "name /* género descriptivo, como Masculino, Femenino, Otro */",
+                    "code /* código usado internamente para representar el género */"
+                ]
+
+            if "gnuhealth_race" in tables:
+                tables["gnuhealth_race"] = [
+                    "id",
+                    "name /* descripción de la raza del paciente */",
+                    "code /* identificador técnico o abreviado de la raza */"
+                ]
+
+            if "gnuhealth_patient" in tables:
+                tables["gnuhealth_patient"] = [
+                    "id",
+                    "name /* referencia a la persona en party_party */",
+                    "ethnicity /* etnia del paciente */",
+                    "race /* raza del paciente */",
+                    "gender /* género del paciente */",
+                    "dob /* fecha de nacimiento */",
+                    "blood_type /* tipo sanguíneo del paciente */"
+                ]
+
+            if "party_party" in tables:
+                tables["party_party"] = [
+                    "id",
+                    "name /* nombre completo de la persona o entidad */",
+                    "du /* referencia al departamento o unidad regional */",
+                    "active /* si la persona está activa en el sistema */"
+                ]
+
+            if "gnuhealth_du" in tables:
+                tables["gnuhealth_du"] = [
+                    "id",
+                    "name /* nombre interno del departamento */",
+                    "desc /* descripción del departamento o ubicación regional */"
+                ]
+
+            if "gnuhealth_person_alternative_identification" in tables:
+                tables["gnuhealth_person_alternative_identification"] = [
+                    "id",
+                    "name /* referencia a la persona */",
+                    "code /* código alternativo, como número de expediente u otra identificación */"
+                ]
+
+            if not tables:
+                return "No se pudo extraer el esquema relacionado con la pregunta."
+
+            schema_lines = [f"{t}({', '.join(cols)})" for t, cols in tables.items()]
             return "\n".join(schema_lines)
 
         except Exception as e:
-            print("Error extrayendo esquema:", e)
+            print("❌ Error extrayendo esquema:", e)
             return "No se pudo cargar el esquema."
 
     def generate_natural_response_stream(self, question: str) -> str:
@@ -126,7 +224,7 @@ class Agent:
             """
 
             # Obtener esquema y construir el prompt
-            schema_context = self.get_schema_summary()
+            schema_context = self.get_schema_summary(question)
 
             prompt = (
                 f"/query {question}\n"
