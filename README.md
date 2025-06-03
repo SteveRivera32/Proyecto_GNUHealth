@@ -159,13 +159,11 @@ Antes de comenzar, asegurarse de tener instalado:
 7. **Correr Ollama localmente**
 
     En una nueva terminal, correr:
-    En el directorio del proyecto deberá aparecer un archivo .env (si no está crearlo). Aquí se debe colocar lo siguiente:
     ```bash
     ollama run <model_name>
     ```
 
     Recomendamos usar el modelo: **anindya/prem1b-sql-ollama-fp116**:
-    En el directorio del proyecto deberá aparecer un archivo .env (si no está crearlo). Aquí se debe colocar lo siguiente:
     ```bash
     ollama run anindya/prem1b-sql-ollama-fp116
     ```
