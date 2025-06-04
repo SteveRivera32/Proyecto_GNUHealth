@@ -104,3 +104,31 @@ class Text2SQLGeneratorOllama(Text2SQLGeneratorBase):
         # Retorna la respuesta postprocesada si es necesario
         print(response)
         return self.postprocess(output_string=response) if postprocess else response
+
+    def generate_text(
+        self,
+        prompt: str,
+        temperature: float = 0.7,
+        max_new_tokens: int = 256,
+    ) -> str:
+        """
+        Genera una respuesta de texto natural con el modelo Ollama.
+
+        Args:
+            prompt (str): Entrada en lenguaje natural.
+            temperature (float): Aleatoriedad.
+            max_new_tokens (int): Límite de tokens nuevos.
+
+        Returns:
+            str: Respuesta generada en lenguaje natural.
+        """
+        response = self.load_client.chat(
+            model=self.model_name_or_path,
+            messages=[{"role": "user", "content": prompt}],
+            options=dict(
+                temperature=temperature,
+                num_ctx=2048 + max_new_tokens
+            )
+        )["message"]["content"]
+
+        return response.strip()
