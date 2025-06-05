@@ -117,14 +117,21 @@ async def chat_completions(request: ChatCompletionRequest, authorization: str = 
 
     # Solo tomamos el último mensaje del usuario
     user_question = request.messages[-1].content
-    decision = agent.decide_response_type(user_question)
+    response, tipo = agent.generate_response(user_question)
 
-    if decision == "SQL":
-        answer = agent.generate_sql_response(user_question)
-    elif decision == "NATURAL":
-        answer = agent.generate_natural_response(user_question)
+    if tipo in ["natural", "sql_result"]:
+        answer = response.get("content", "Respuesta vacía.")
+    elif tipo == "error":
+        answer = response.get("error", "Ocurrió un error inesperado.")
+    elif tipo == "error_handled":
+        if "content" in response:
+            answer = response["content"]
+        elif "sql" in response:
+            answer = f"Se corrigió la consulta: {response['sql']}"
+        else:
+            answer = "Se intentó corregir el error pero no se obtuvo una respuesta válida."
     else:
-        answer = "No pude decidir cómo responder a tu pregunta."
+        answer = "No se pudo procesar la respuesta."
 
     return {
         "id": chat_id,
@@ -135,7 +142,6 @@ async def chat_completions(request: ChatCompletionRequest, authorization: str = 
             "message": ChatMessage(role="assistant", content=answer),
         }]
     }
-
 
 # Soporte para solicitudes OPTIONS desde frontend (preflight)
 @app.options("/api/models")

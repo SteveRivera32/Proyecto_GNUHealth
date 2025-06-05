@@ -1,67 +1,33 @@
-from premsql.agents import BaseLineAgent
-from generators.text2sql_ollama_model import Text2SQLGeneratorOllama
-from generators.text2sql_google_model import Text2SQLGeneratorOpenAI
-from premsql.agents.tools import SimpleMatplotlibTool
-from executors.postgre_executor import PostgreSQLExecutor
-from generators.natural_ollama_model import TextGenerator 
-from premsql.executors import ExecutorUsingLangChain
-import pandas as pd
-import os
-from tabulate import tabulate
 import json
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
+import pandas as pd
+import re
+import os
+from generators.natural_ollama_model import TextGenerator
+from premsql.executors import ExecutorUsingLangChain
+from tabulate import tabulate
 
 class Agent:
-    """
-    Clase que representa un agente inteligente capaz de procesar preguntas en lenguaje natural
-    y convertirlas en respuestas SQL o texto explicativo utilizando modelos de Ollama.
-
-    Atributos:
-        model (Text2SQLGeneratorOllama): Generador de instrucciones SQL desde texto.
-        text_generator (TextGenerator): Generador de texto natural.
-        agent (BaseLineAgent): Agente base que coordina la ejecución y herramientas.
-    """
-    
     def __init__(self, model_name: str):
-        """
-        Inicializa el agente con los modelos de generación de texto y SQL, así como la conexión a la base de datos.
+        self.model = TextGenerator(model_name=model_name)
+        self.executor = ExecutorUsingLangChain()
+        self.db_uri = "postgresql://admin:gnusolidario@localhost:5432/ghdemo44"
 
-        Args:
-            model_name (str): Nombre del modelo Ollama a utilizar para generación de texto y SQL.
-        """
-        self.model = Text2SQLGeneratorOllama(
-            model_name=model_name,
-            experiment_name="ollama",
-            type="test",
-        )
+    def load_prompt_template(self) -> str:
+        base_path = os.path.dirname(__file__)
+        prompt_path = os.path.join(base_path, "..", "prompt.txt")
+        with open(prompt_path, "r", encoding="utf-8") as f:
+            return f.read()
 
-        url = "postgresql://postgres:postgres@localhost:5432/db"
-        self.agent = BaseLineAgent(
-            session_name="testing_ollama",
-            db_connection_uri="postgresql://admin:gnusolidario@localhost:5432/ghdemo44",
-            specialized_model1=self.model,
-            specialized_model2=None,
-            plot_tool=SimpleMatplotlibTool(),
-            executor=ExecutorUsingLangChain(),
-        )
-    
-    def get_schema_summary(self, question: str):
-        """
-        Extrae el esquema de tablas relevantes en base a la pregunta e incluye descripción de columnas si está disponible.
-        """
+    def get_schema_summary(self, question: str) -> str:
         try:
-            from sqlalchemy import create_engine, text
-            import re
-
-            # Detectar nombres de tabla en la pregunta
             table_pattern = re.findall(r'\b(?:from|join|table)\s+([a-zA-Z_][\w]*)', question.lower())
             keywords = set(table_pattern)
 
-            engine = create_engine("postgresql://admin:gnusolidario@localhost:5432/ghdemo44")
+            engine = create_engine(self.db_uri)
             tables = {}
 
             with engine.connect() as conn:
-                # Obtener tablas relacionadas por claves foráneas
                 fk_result = conn.execute(text("""
                     SELECT DISTINCT
                         tc.table_name AS source_table,
@@ -78,15 +44,12 @@ class Agent:
                 """))
 
                 related_tables = set()
-                for row in fk_result.fetchall():
-                    source, target = row
+                for source, target in fk_result.fetchall():
                     if source in keywords or target in keywords:
-                        related_tables.add(source)
-                        related_tables.add(target)
+                        related_tables.update([source, target])
 
                 all_relevant_tables = keywords.union(related_tables)
 
-                # Obtener columnas y descripciones
                 if not all_relevant_tables:
                     return "No se pudo extraer el esquema relacionado con la pregunta."
 
@@ -107,73 +70,39 @@ class Agent:
                         cols.table_name, cols.ordinal_position;
                 """))
 
-                for row in cols_result.fetchall():
-                    table, column, description = row
+                for table, column, description in cols_result.fetchall():
                     if table in all_relevant_tables:
-                        if table not in tables:
-                            tables[table] = []
-                        if description:
-                            tables[table].append(f"{column} /* {description} */")
-                        else:
-                            tables[table].append(column)
+                        tables.setdefault(table, []).append(
+                            f"{column} /* {description} */" if description else column
+                        )
 
-            # Agregar descripciones específicas de tablas conocidas
+            # Campos extra manuales
             if "gnuhealth_ethnicity" in tables:
-                tables["gnuhealth_ethnicity"] = [
-                    "id",
-                    "name /* nombre descriptivo de la etnia */",
-                    "code /* código corto o clave técnica de la etnia */"
-                ]
+                tables["gnuhealth_ethnicity"] = ["id", "name /* nombre descriptivo de la etnia */", "code /* código corto o clave técnica de la etnia */"]
 
             if "gnuhealth_gender" in tables:
-                tables["gnuhealth_gender"] = [
-                    "id",
-                    "name /* género descriptivo, como Masculino, Femenino, Otro */",
-                    "code /* código usado internamente para representar el género */"
-                ]
+                tables["gnuhealth_gender"] = ["id", "name /* género descriptivo */", "code /* código técnico */"]
 
             if "gnuhealth_race" in tables:
-                tables["gnuhealth_race"] = [
-                    "id",
-                    "name /* descripción de la raza del paciente */",
-                    "code /* identificador técnico o abreviado de la raza */"
-                ]
+                tables["gnuhealth_race"] = ["id", "name /* raza */", "code /* código */"]
 
             if "gnuhealth_patient" in tables:
                 tables["gnuhealth_patient"] = [
-                    "id",
-                    "name /* referencia a la persona en party_party */",
-                    "ethnicity /* etnia del paciente */",
-                    "race /* raza del paciente */",
-                    "gender /* género del paciente */",
-                    "dob /* fecha de nacimiento */",
-                    "blood_type /* tipo sanguíneo del paciente */"
+                    "id", "name /* persona */", "ethnicity", "race", "gender", "dob", "blood_type"
                 ]
 
             if "party_party" in tables:
                 tables["party_party"] = [
-                    "id",
-                    "name /* nombre completo de la persona o entidad */",
-                    "du /* referencia al departamento o unidad regional */",
-                    "active /* si la persona está activa en el sistema */"
+                    "id", "name /* nombre completo */", "du", "active"
                 ]
 
             if "gnuhealth_du" in tables:
                 tables["gnuhealth_du"] = [
-                    "id",
-                    "name /* nombre interno del departamento */",
-                    "desc /* descripción del departamento o ubicación regional */"
+                    "id", "name", "desc"
                 ]
 
             if "gnuhealth_person_alternative_identification" in tables:
-                tables["gnuhealth_person_alternative_identification"] = [
-                    "id",
-                    "name /* referencia a la persona */",
-                    "code /* código alternativo, como número de expediente u otra identificación */"
-                ]
-
-            if not tables:
-                return "No se pudo extraer el esquema relacionado con la pregunta."
+                tables["gnuhealth_person_alternative_identification"] = ["id", "name", "code"]
 
             schema_lines = [f"{t}({', '.join(cols)})" for t, cols in tables.items()]
             return "\n".join(schema_lines)
@@ -182,133 +111,95 @@ class Agent:
             print("❌ Error extrayendo esquema:", e)
             return "No se pudo cargar el esquema."
 
-    def generate_natural_response_stream(self, question: str) -> str:
-        """
-        Genera una respuesta en lenguaje natural para una pregunta dada.
-        Y la envia en tiempo real al usuario. Esta opcion habilitada como meramente una prueba 
-        para mostrar al usuario
+    def query_model(self, question: str) -> dict:
+        schema_context = self.get_schema_summary(question)
+        prompt_template = self.load_prompt_template()
 
-        Args:
-            question (str): Pregunta en lenguaje natural ingresada por el usuario.
+        for attempt in range(4):
+            print(f"🧠 Intento {attempt + 1}: Enviando prompt al modelo.")
+            if attempt == 0:
+                prompt = f"{prompt_template}\n\nUser: {question}\nTables:\n{schema_context}"
+            else:
+                prompt = (
+                    f"{prompt_template}\n\n"
+                    f"⚠️ Tu respuesta anterior no era JSON válido. "
+                    f"Asegúrate de responder solo con un objeto JSON correcto según las instrucciones.\n\n"
+                    f"User: {question}\nTables:\n{schema_context}"
+                )
 
-        Returns:
-            str: Respuesta generada por el modelo en lenguaje natural partida en Chunks 
-        """
+            raw = self.model.generate(prompt)
+            print(f"📩 Respuesta RAW:\n{raw}")
+            try:
+                return json.loads(raw)
+            except Exception as e:
+                print(f"❌ Error al parsear JSON (intento {attempt + 1}):", str(e))
 
-    
-        return self.model.generate_stream({"prompt": question})
-    
+        return {"parse_error": "No se pudo obtener una respuesta JSON válida después de varios intentos."}
 
-    def generate_natural_response(self, question: str) -> str:
-        """
-        Genera una respuesta en lenguaje natural para una pregunta dada.
 
-        Args:
-            question (str): Pregunta en lenguaje natural ingresada por el usuario.
-
-        Returns:
-            str: Respuesta generada por el modelo en lenguaje natural.
-        """
-        return self.model.generate({"prompt": question})
-    
-    def generate_sql_response(self, question: str):
+    def execute_sql(self, sql: str):
         try:
-            """
-            Convierte una pregunta en lenguaje natural en una consulta SQL y la ejecuta sobre la base de datos.
-
-            Args:
-                question (str): Pregunta del usuario en lenguaje natural.
-
-            Returns:
-                str: Consulta SQL + tabla formateada, o mensaje de error.
-            """
-
-            # Obtener esquema y construir el prompt
-            schema_context = self.get_schema_summary(question)
-
-            prompt = (
-                f"/query {question}\n"
-                "Generate ONLY the PostgreSQL SQL query in a SINGLE LINE, "
-                "do NOT include markdown formatting (no triple backticks, no indentation), "
-                "do NOT include any text explanation or comments, "
-                "ALWAYS end the query with a semicolon (;).\n\n"
-                f"Tables:\n{schema_context}"
-            )
-
-            print("🧠 PROMPT ENVIADO AL MODELO:\n", prompt)
-
-            # Enviar al modelo
-            response = self.agent(prompt)
-
-            print("🔍 Raw model response:\n", response)
-
-            print("*" * 40)
-            print("📝 Pregunta:", question)
-            print("📄 SQL generado:", response.sql_string)
-            print("*" * 40)
-
-            # Verificar si el SQL fue generado correctamente
-            if not response.sql_string or "SELECT" not in response.sql_string.upper():
-                return "El modelo no generó una consulta SQL válida."
-
-            # Obtener los datos
-            data = response.sql_output_dataframe
-            if not data or not isinstance(data, dict):
-                return response.sql_string + "\n(No se obtuvieron resultados de la base de datos.)"
-
-            cols = data.get("columns", [])
-            values = data.get("data", {})
-
-            if not cols or not values:
-                return response.sql_string + "\n(Consulta ejecutada, pero sin resultados útiles.)"
-
-            # Imprimir raw
-            print("📦 Raw DataFrame:", data)
-
-            # Formatear a tabla
-            num_rows = max(len(v) for v in values.values())
-            rows = []
-            for i in range(num_rows):
-                row = {col: values[col].get(i, "") for col in cols}
-                rows.append(row)
-
-            markdown_table = tabulate(rows, headers="keys", tablefmt="github")
-            print("📊 Resultado formateado:\n", markdown_table)
-
-            return response.sql_string + "\n" + markdown_table
-
+            engine = create_engine(self.db_uri)
+            df = pd.read_sql(sql, engine)
+            data = df.to_dict(orient="records")
+            return {"result": data}
         except Exception as e:
-            print(f"❌ Error al generar o ejecutar SQL: {e}")
-            return "No se pudo generar una consulta SQL válida para esta pregunta."
-
-    def decide_response_type(self, question: str) -> str:
-        decision_prompt = (
-            f"Eres un experto que decide el mejor formato para responder preguntas: "
-            f"consulta SQL o respuesta en lenguaje natural.\n\n"
-            f"Instrucción: Dada la pregunta siguiente, responde solo con UNA palabra, "
-            f"que debe ser 'SQL' si la respuesta requiere una consulta SQL, "
-            f"o 'NATURAL' si debe responderse solo en lenguaje natural. "
-            f"No escribas nada más, ni explicación.\n\n"
-            f"Ejemplo:\n"
-            f"Pregunta: ¿Cuántos empleados hay en la tabla?\n"
-            f"Respuesta: SQL\n\n"
-            f"Pregunta: ¿Qué es una base de datos?\n"
-            f"Respuesta: NATURAL\n\n"
-            f"Pregunta: {question}\n"
-            f"Respuesta:"
-        )
-        decision = self.model.generate({"prompt": decision_prompt}).strip().upper()
-        return decision
+            print("❌ Error al ejecutar SQL:", e)
+            return {"error": str(e)}
 
     def generate_response(self, question: str):
-        decision = self.decide_response_type(question)
-        # Imprimir la decisión
-        print(f"Decision: {decision}")
-        if decision == "SQL":
-            response = self.generate_sql_response(question)
-            return response, "sql"
-        elif decision == "NATURAL":
-            response = self.generate_natural_response(question)
+        response = self.query_model(question)
+        print("📥 Respuesta del modelo:", response)
+
+        if "parse_error" in response:
+            return response, "error"
+
+        if "content" in response:
             return response, "natural"
+
+        elif response.get("require") and "sql" in response:
+            print("🟢 Entró al bloque SQL requerido")
+            sql = response["sql"]
+            print(f"▶ Ejecutando SQL: {sql}")
+
+            for attempt in range(4):  # hasta 4 intentos
+                execution_result = self.execute_sql(sql)
+                print(f"🧪 Intento {attempt + 1}: Resultado de ejecución SQL:", execution_result)
+
+                if "error" in execution_result:
+                    print("🔁 Reintentando debido a error SQL...")
+                    error_json = {"error": execution_result["error"]}
+                    retry_prompt = json.dumps(error_json)
+                    retry_response = self.model.generate(retry_prompt)
+                    try:
+                        retry_json = json.loads(retry_response)
+                        if retry_json.get("require") and "sql" in retry_json:
+                            sql = retry_json["sql"]  # actualizar SQL con versión corregida
+                        elif "content" in retry_json:
+                            return retry_json, "natural"
+                        else:
+                            return {"parse_error": "Respuesta corregida no reconocida"}, "error"
+                    except:
+                        print("❌ El modelo devolvió un JSON inválido durante corrección de error.")
+                        continue  # intentar de nuevo
+                else:
+                    print("✅ Entró al bloque para imprimir tabla")
+                    print("\n📊 TABLA SQL EJECUTADA:")
+                    print(tabulate(execution_result["result"], headers="keys", tablefmt="github"))
+
+                    result_data = json.dumps(execution_result["result"], ensure_ascii=False)
+                    result_prompt = f"{result_data}"
+                    markdown_response = self.model.generate(result_prompt)
+                    try:
+                        markdown_json = json.loads(markdown_response)
+                        return markdown_json, "sql_result"
+                    except:
+                        return {"parse_error": "Error formateando resultado SQL"}, "error"
+
+            return {"content": "No se pudo generar una respuesta válida después de varios intentos."}, "error"
+
+        elif "error" in response:
+            return response, "error"
+
         else:
-            return "No pude decidir cómo responder a tu pregunta.", "error"
+            return {"parse_error": "Formato de respuesta no reconocido"}, "error"
