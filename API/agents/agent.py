@@ -125,6 +125,7 @@ class Agent:
                     f"User: {question}\nTables:\n{schema_context}"
                 )
 
+            print(f"📥 Enviando prompt al modelo: {prompt}")
             raw = self.model.generate(prompt)
             print(f"📩 Respuesta RAW:\n{raw}")
             try:
@@ -133,7 +134,6 @@ class Agent:
                 print(f"❌ Error al parsear JSON (intento {attempt + 1}):", str(e))
 
         return {"parse_error": "No se pudo obtener una respuesta JSON válida después de varios intentos."}
-
 
     def execute_sql(self, sql: str):
         try:

@@ -1,0 +1,73 @@
+Disease statistical analysis:
+
+party_party contains personal data as name address and other stufff
+
+gnuhealth_patient_disease stores diseases per patient. It references gnuhealth_pathology via pathology and gnuhealth_patient via name.
+
+
+Table Aliases:
+- pathology → gnuhealth_pathology
+- patient → gnuhealth_patient
+- disease → gnuhealth_patient_disease
+
+Lista el numero de casos medicos Hipertension, Cancer.. etc
+
+
+table_name: gnuhealth_patient
+
+columns: [
+  [id, integer],
+  [create_date, timestamp(6)],
+  [write_date, timestamp(6)],
+  [create_uid, integer],
+  [write_uid, integer],
+  [family, integer],
+  [blood_type, character varying],
+  [general_info, text],
+  [primary_care_doctor, integer],
+  [critical_info, text],
+  [rh, character varying],
+  [current_address, integer],
+  [name, integer],
+  [dod, timestamp(0)],
+  [current_insurance, integer],
+  [cod, integer],]
+
+Foreign_Keys: [
+  [family, gnuhealth_family],
+  [primary_care_doctor, gnuhealth_healthprofessional],
+  [current_address, party_address],
+  [name, party_party],
+  [current_insurance, gnuhealth_insurance],
+  [cod, gnuhealth_pathology],
+  [diet_belief, gnuhealth_diet_belief],
+  [vegetarian_type, gnuhealth_vegetarian_types]
+]
+table_name: gnuhealth_pathology
+
+columns: [
+  [id, integer],
+  [create_date, timestamp(6)],
+  [write_date, timestamp(6)],
+  [create_uid, integer],
+  [write_uid, integer],
+  [category, integer],
+  [code, character varying],
+  [name, character varying],
+  [info, text],
+  [protein, character varying],
+  [gene, character varying],
+  [chromosome, character varying],
+  [active, boolean],
+  [uri, character varying]
+]
+
+Foreign_Keys: [
+  [category, gnuhealth_pathology_category]
+]
+
+SELECT gpa.name AS "Enfermedad", COUNT(gpa.name) AS "no"
+FROM gnuhealth_patient_disease AS gpd
+LEFT JOIN gnuhealth_pathology AS gpa ON gpa.id = gpd.pathology
+GROUP BY gpa.name
+ORDER BY "no" DESC;

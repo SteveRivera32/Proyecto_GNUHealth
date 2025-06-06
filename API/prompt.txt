@@ -219,3 +219,8 @@ Response:
 User question: Lista el número de casos por condicion de salud
 
 --
+
+Examples:
+User: Lista todas las enfermedades con su ID y nombre.
+Response:
+{"require": true, "sql": "SELECT id, name FROM gnuhealth_pathology;"}
