@@ -83,8 +83,6 @@ class Agent:
             if "gnuhealth_gender" in tables:
                 tables["gnuhealth_gender"] = ["id", "name /* género descriptivo */", "code /* código técnico */"]
 
-            if "gnuhealth_race" in tables:
-                tables["gnuhealth_race"] = ["id", "name /* raza */", "code /* código */"]
 
             if "gnuhealth_patient" in tables:
                 tables["gnuhealth_patient"] = [
