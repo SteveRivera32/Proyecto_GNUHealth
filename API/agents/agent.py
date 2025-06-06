@@ -18,6 +18,12 @@ class Agent:
         prompt_path = os.path.join(base_path, "..", "prompt.txt")
         with open(prompt_path, "r", encoding="utf-8") as f:
             return f.read()
+    
+    def load_context(self) -> str:
+        base_path = os.path.dirname(__file__)
+        prompt_path = os.path.join(base_path, "..", "context.txt")
+        with open(prompt_path, "r", encoding="utf-8") as f:
+            return f.read()
 
     def get_schema_summary(self, question: str) -> str:
         try:
@@ -109,24 +115,32 @@ class Agent:
             print("❌ Error extrayendo esquema:", e)
             return "No se pudo cargar el esquema."
 
+    def remove_markdown(self, text: str) -> str:
+        text2 = text.replace("json", " ")
+        return text2.replace("```", " ")
+
     def query_model(self, question: str) -> dict:
         schema_context = self.get_schema_summary(question)
         prompt_template = self.load_prompt_template()
+        extra_context = self.load_context()
 
         for attempt in range(4):
             print(f"🧠 Intento {attempt + 1}: Enviando prompt al modelo.")
             if attempt == 0:
-                prompt = f"{prompt_template}\n\nUser: {question}\nTables:\n{schema_context}"
+                prompt = f"{prompt_template}\nUser: {question}\nExtra Context:\n{extra_context}\n"
+                #prompt = f"User: {question}"
             else:
                 prompt = (
                     f"{prompt_template}\n\n"
                     f"⚠️ Tu respuesta anterior no era JSON válido. "
                     f"Asegúrate de responder solo con un objeto JSON correcto según las instrucciones.\n\n"
-                    f"User: {question}\nTables:\n{schema_context}"
+                    f"User: {question}\n"
+                    #f"Tables:\n{schema_context}"
                 )
 
             print(f"📥 Enviando prompt al modelo: {prompt}")
             raw = self.model.generate(prompt)
+            raw = self.remove_markdown(raw)
             print(f"📩 Respuesta RAW:\n{raw}")
             try:
                 return json.loads(raw)
@@ -145,6 +159,22 @@ class Agent:
             print("❌ Error al ejecutar SQL:", e)
             return {"error": str(e)}
 
+    def json_to_markdown(json_data):
+        # Si recibes un string JSON, lo conviertes a list/dict
+        if isinstance(json_data, str):
+            json_data = json.loads(json_data)
+
+        # Si es lista de dicts → tabla
+        if isinstance(json_data, list) and all(isinstance(item, dict) for item in json_data):
+            return tabulate(json_data, headers="keys", tablefmt="github")
+        
+        # Si es dict simple → lo formateas como bloque json
+        elif isinstance(json_data, dict):
+            return "```json\n" + json.dumps(json_data, indent=2, ensure_ascii=False) + "\n```"
+        
+        else:
+            raise ValueError("El formato JSON no es compatible (debe ser lista de dicts o dict simple).")
+
     def generate_response(self, question: str):
         response = self.query_model(question)
         print("📥 Respuesta del modelo:", response)
@@ -153,6 +183,9 @@ class Agent:
             return response, "error"
 
         if "content" in response:
+            return response, "natural"
+
+        if "response" in response:
             return response, "natural"
 
         elif response.get("require") and "sql" in response:
@@ -187,7 +220,10 @@ class Agent:
 
                     result_data = json.dumps(execution_result["result"], ensure_ascii=False)
                     result_prompt = f"{result_data}"
-                    markdown_response = self.model.generate(result_prompt)
+                    print("📤 Enviando resultado SQL al modelo para generar respuesta en Markdown:", result_prompt)
+                    markdown_response = self.json_to_markdown(result_prompt)
+                    print("📊 Tabla convertida a Markdown:\n", markdown_response)
+
                     try:
                         markdown_json = json.loads(markdown_response)
                         return markdown_json, "sql_result"
