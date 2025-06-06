@@ -74,7 +74,6 @@ Table Aliases:
 - patient → gnuhealth_patient
 - disease → gnuhealth_patient_disease
 
-Lista el numero de casos medicos Hipertension, Cancer.. etc
 
 table_name: gnuhealth_patient_disease
 
