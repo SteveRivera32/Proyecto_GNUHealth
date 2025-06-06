@@ -1,0 +1,25 @@
+gnuhealth_patient_disease stores disease cases.
+
+Each disease case has a pathology foreign key linking to gnuhealth_pathology, which stores the disease names.
+
+The column gnuhealth_pathology.name contains the name of the disease.
+
+Please generate a SQL query that:
+
+Counts the number of times each disease (from gnuhealth_pathology.name) appears in gnuhealth_patient_disease.
+
+Groups the results by disease name.
+
+Orders the results by count in descending order.
+
+Table aliases:
+
+disease = gnuhealth_patient_disease
+
+pathology = gnuhealth_pathology
+
+SQL output should be:
+
+Column 1: disease name (pathology.name)
+
+Column 2: number of cases

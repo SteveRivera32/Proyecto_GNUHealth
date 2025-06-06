@@ -34,7 +34,7 @@ class Agent:
             type="test",
         )
         
-        #self.text_generator = TextGenerator(model_name=model_name)
+        self.text_generator = TextGenerator(model_name=model_name)
         #self.text_generator= Text2SQLGeneratorOpenAI(
         #     model_name=model_name,   # or your preferred model
         #     experiment_name="testing_openai",
@@ -122,9 +122,12 @@ class Agent:
         # Convertir a Markdown
         markdown_table = tabulate(rows, headers="keys", tablefmt="github")
         print(markdown_table)
+        content=""
+        with open("prompt.txt", 'r', encoding='utf-8') as file:
+            content = file.read() # Corregido: de 'file.red()' a 'file.read()'
+         
 
-
-        response = self.agent(f"/query {question}, always add the significant table to the output, exclude rows with null values, statscore table contans the schools statistics and schools table contain schoo information")
+        response = self.agent(f"/query {question} ,{content} , always add the significant table to the output, exclude rows with null values, statscore table contans the schools statistics and schools table contain schoo information")
         
     
-        return response.sql_string+"\n"+markdown_table
+        return markdown_table
