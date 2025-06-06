@@ -116,13 +116,12 @@ class Agent:
         for attempt in range(4):
             print(f"🧠 Intento {attempt + 1}: Enviando prompt al modelo.")
             if attempt == 0:
-                prompt = f"{prompt_template}\n\nUser: {question}\nTables:\n{schema_context}"
+                prompt = f"User: {question}"
             else:
                 prompt = (
-                    f"{prompt_template}\n\n"
                     f"⚠️ Tu respuesta anterior no era JSON válido. "
                     f"Asegúrate de responder solo con un objeto JSON correcto según las instrucciones.\n\n"
-                    f"User: {question}\nTables:\n{schema_context}"
+                    f"User: {question}"
                 )
 
             print(f"📥 Enviando prompt al modelo: {prompt}")
