@@ -173,13 +173,14 @@ Antes de comenzar, asegurarse de tener instalado:
     ollama run <model_name>
     ```
 
-    Recomendamos usar el modelo: **anindya/prem1b-sql-ollama-fp116**:
+    Recomendamos usar el modelo: **gemma3:4b**:
     ```bash
-    ollama run anindya/prem1b-sql-ollama-fp116
+    ollama run gemma3:4b
     ```
+    > Este modelo pesa aproximadamente 3gb
 
 8. **Probar el proyecto**
 
     Para probar si funciona, deben primero apretar en "controles" (ícono al lado de las opciones de usuario) y desactivar "Transmisión Directa de la Respuesta del Chat".
 
-    De esta manera ya debería funcionar mandarle un prompt. Importante recordar que el modelo no mantiene una conversación, solo responde a peticiones sobre la base de datos.
+    De esta manera ya debería funcionar mandarle un prompt.
