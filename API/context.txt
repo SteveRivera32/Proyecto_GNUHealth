@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-=======
+
 Disease statistical analysis:
 
 party_party contains personal data as name address and other stufff
@@ -31,4 +30,3 @@ columns: [
 Foreign_Keys: [
   [category, gnuhealth_pathology_category]
 ]
->>>>>>> 98bcdebb62204e6a2fa0354252884d9c04de7821

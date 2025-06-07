@@ -3,12 +3,17 @@ from fastapi.responses import StreamingResponse
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from agents.response_stream import stream_response
+from module.ollama_settings import get_ollama_models
 from models.chat import ChatCompletionRequest, ChatMessage, PromptRequest, PromptResponse, EvalSet
 import agents.agent as ag
+from fastapi.responses import JSONResponse
 import hashlib
 import time
 import os
 import pandas as pd
+import subprocess
+import json
+
 from dotenv import load_dotenv
 
 # Cargar variables de entorno desde un archivo .env
@@ -118,26 +123,18 @@ async def chat_completions(request: ChatCompletionRequest, authorization: str = 
     # Solo tomamos el último mensaje del usuario
     user_question = request.messages[-1].content
     response, tipo = agent.generate_response(user_question)
-
-    if tipo in ["natural", "sql_result"]:
-        if response.get("content", None):
-            answer = response["content"]
-        elif response.get("response", None):
-            answer = response["response"]
-        else:
-            answer = "No se pudo generar una respuesta válida."
+    
+    if tipo == "natural":
+        answer = response.get("content") or response.get("response", "No se pudo generar una respuesta válida.")
+    elif tipo == "sql":
+        # Markdown-formatted table with query
+        answer =  response['table']+"hello"
     elif tipo == "error":
-        answer = response.get("error", f"Ocurrió un error inesperado. {response}")
-    elif tipo == "error_handled":
-        if "content" in response:
-            answer = response["content"]
-        elif "sql" in response:
-            answer = f"Se corrigió la consulta: {response['sql']}"
-        else:
-            answer = "Se intentó corregir el error pero no se obtuvo una respuesta válida."
+        answer = response.get("error", "Ocurrió un error inesperado.")
     else:
         answer = "No se pudo procesar la respuesta."
 
+    print(answer,"answerrr")
     return {
         "id": chat_id,
         "object": "chat.completion",
@@ -168,3 +165,21 @@ async def make_evaluation(eval_set: EvalSet):
     results = 0
 
     return JSONResponse(content={"results": results})
+
+
+@app.get("/api/tags")
+def get_ollama_models_route():
+    try:
+        print("running")
+        models = get_ollama_models()
+        print(models)
+        return JSONResponse(content=models)
+    except Exception as e:
+        print(str(e))
+        return JSONResponse(content={"models": []})
+
+
+
+@app.get("/api/version")
+def get_version():
+    return {"version": "0.5.1"}

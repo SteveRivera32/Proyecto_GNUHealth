@@ -224,3 +224,6 @@ Examples:
 User: Lista todas las enfermedades con su ID y nombre.
 Response:
 {"require": true, "sql": "SELECT id, name FROM gnuhealth_pathology;"}
+
+User: Lista los casos de enfemerdad encontrados:
+{"require":true, "sql":SELECT p.name AS condicion_de_salud FROM gnuhealth_patient_disease d JOIN gnuhealth_pathology p ON d.pathology = p.id GROUP BY p.name;}
