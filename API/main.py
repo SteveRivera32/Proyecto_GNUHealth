@@ -128,13 +128,13 @@ async def chat_completions(request: ChatCompletionRequest, authorization: str = 
         answer = response.get("content") or response.get("response", "No se pudo generar una respuesta válida.")
     elif tipo == "sql":
         # Markdown-formatted table with query
-        answer =  response['table']+"hello"
+        answer =  response['table']
     elif tipo == "error":
         answer = response.get("error", "Ocurrió un error inesperado.")
     else:
         answer = "No se pudo procesar la respuesta."
 
-    print(answer,"answerrr")
+ 
     return {
         "id": chat_id,
         "object": "chat.completion",
