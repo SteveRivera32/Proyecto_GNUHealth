@@ -27,23 +27,6 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-# Alternatively, you can specify specific origins if you know them:
-# origins = [
-#     "http://localhost",
-#     "http://localhost:8080",
-#     "http://127.0.0.1",
-#     "http://127.0.0.1:8080",
-#     "https://your-production-domain.com",
-# ]
-# 
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=origins,
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
-
 # Endpoint para procesar prompts y devolver respuestas en formato PromptResponse
 @app.post("/ask", response_model=PromptResponse)
 async def handle_prompt(request: PromptRequest):
@@ -62,30 +45,13 @@ async def handle_prompt(request: PromptRequest):
 # Lista de modelos disponibles (imitando API de OpenAI)
 available_models = [
     {
-        "id": "tinyllama",
+        "id": "gnutest",
         "object": "model",
         "created": 1,
         "owned_by": "google-open-source"
     },
-     {
-        "id": "anindya/prem1b-sql-ollama-fp116",
-        "object": "model",
-        "created": 2,
-        "owned_by": "premai-open-source"
-    },
-       {
-        "id": "gemma-3-27b-it",
-        "object": "model",
-        "created": 2,
-        "owned_by": "premai-open-source"
-    },
        {
         "id": "gemma3:4b",
-        "object": "model",
-        "created": 2,
-        "owned_by": "premai-open-source"
-    }, {
-        "id": "gemini-2.5-flash-preview-04-17",
         "object": "model",
         "created": 2,
         "owned_by": "premai-open-source"
@@ -106,18 +72,64 @@ async def list_models():
 async def chat_completions(request: ChatCompletionRequest, authorization: str = Header(default=None)):
     print("Recibido en /chat/completions")
     print("Modelo:", request.model)
-    print("Mensajes:", [m.content for m in request.messages])
+    #print("Mensajes:", [m.content for m in request.messages])
 
-    if not request.model or not request.messages:
-        print("Modelo o mensajes faltantes")
-        raise HTTPException(status_code=400, detail="Faltan datos requeridos: modelo o mensajes.")
+    # Verificar si el modelo es válido
+    if request.model not in [m["id"] for m in available_models]:
+        raise HTTPException(status_code=404, detail="404: Model not listed in /api/models")
+
+    # Para debug, ver si Ollama tiene ese modelo
+    if request.model == "gnutest":
+        print("⚠️ WARNING: gnutest no es un modelo real en Ollama (esto es solo un ID de prueba).")
+
+    # ✅ Nueva validación correcta (la que te recomiendo poner)
+    if not request.model:
+        print("Modelo faltante")
+        raise HTTPException(status_code=400, detail="Falta el modelo.")
+
+    if request.messages is None:
+        print("Messages es None (no permitido)")
+        raise HTTPException(status_code=400, detail="Messages no puede ser None.")
+
+    if len(request.messages) == 0:
+        print("Messages vacío → respuesta vacía")
+        return {
+            "id": "premSQLChat-empty",
+            "object": "chat.completion",
+            "created": time.time(),
+            "model": request.model,
+            "choices": [{
+                "message": ChatMessage(role="assistant", content=""),
+            }]
+        }
+
+    # 🔥 Extraer system prompt (si existe)
+    system_prompt = None
+    for msg in request.messages:
+        if msg.role == "system":
+            system_prompt = msg.content
+            break
+
+    print("System prompt cargado\n" if system_prompt else "No system prompt\n")
 
     agent = ag.Agent(request.model)
+
+    # Reconstruir chat_history desde request.messages (así se mantiene la conversación)
+    agent.chat_history = [ { "role": m.role, "content": m.content } for m in request.messages ]
+
     chat_id = "premSQLChat-" + hashlib.sha256(str(request.messages).encode()).hexdigest()[:24]
 
-    # Solo tomamos el último mensaje del usuario
-    user_question = request.messages[-1].content
-    response, tipo = agent.generate_response(user_question)
+    # Tomar el último mensaje del usuario
+    user_question = None
+    for msg in reversed(request.messages):
+        if msg.role == "user":
+            user_question = msg.content
+            break
+
+    if not user_question:
+        raise HTTPException(status_code=400, detail="No se encontró un mensaje de usuario válido.")
+
+    response, tipo = agent.generate_response(user_question, system_prompt=system_prompt)
 
     if tipo in ["natural", "sql_result"]:
         if response.get("content", None):

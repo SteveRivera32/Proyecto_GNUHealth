@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 
 # Clase para mensajes individuales usados en chats estilo OpenAI
@@ -27,11 +27,20 @@ class ChatCompletionRequest(BaseModel):
         stream (Optional[bool]): Si se desea respuesta en streaming.
     """
     model: str
-    messages: List[ChatMessage]
+    messages: List[ChatMessage] = Field(default_factory=list)
     max_tokens: Optional[int] = 100
     temperature: Optional[float] = 1.0
     top_p: Optional[float] = 1.0
     stream: Optional[bool] = False  # Compatible con OpenAI
+
+    # 🚀 Campos opcionales que OpenWebUI puede mandar
+    params: Optional[dict] = None
+    background_tasks: Optional[dict] = None
+    chat_id: Optional[str] = None
+    features: Optional[dict] = None
+    id: Optional[str] = None
+    session_id: Optional[str] = None
+    variables: Optional[dict] = None
 
 # Solicitud para prompts simples (sin contexto de chat)
 class PromptRequest(BaseModel):
