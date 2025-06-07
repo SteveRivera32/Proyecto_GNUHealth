@@ -86,7 +86,7 @@ Antes de comenzar, asegurarse de tener instalado:
 
     Para correrla se usa (dentro del entorno venv):
     ```bash
-    uvicorn main:app --host 0.0.0.0 --port 8000
+    uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     ```
     
     En el caso que el puerto 8000 ya esté siendo usado, se puede usar el 8001.
@@ -137,12 +137,22 @@ Antes de comenzar, asegurarse de tener instalado:
     Abrir OpenWebUI en el navegador:
     http://localhost:3000
 
-    Arriba a la derecha en su usuario, van a ajustes y buscan la parte de "conexiones". Agregar una nueva y colocar la url: http://localhost:8000/api
+    Arriba a la derecha en su usuario, van a ajustes y buscan la parte de "conexiones". Agregar una nueva y colocar la url:
+    ```bash
+    http://localhost:8000/api
+    ```
     > El puerto puede cambiar si levantaron la API en uno distinto.
 
-    ![image](https://github.com/user-attachments/assets/73f3c7f6-aae3-433a-a827-c83d2aa14bdc)
+    También se recomienda agregar un prefijo para diferenciar los modelos de los locales de Ollama. El prefijo puede ser "prem".
 
-    Por último abajo a la izquierda en su usuario, ir a "administración", luego a ajustes, luego conexiones y desactivar "API Ollama".
+    ![Image](https://github.com/user-attachments/assets/98c470ef-437d-4e62-b454-cbcd1d1eb5e6)
+
+    Por último abajo a la izquierda en su usuario, ir a "administración", luego a ajustes, luego conexiones y en la "API Ollama" colocar el siguiente URL:
+    ```bash
+    http://host.docker.internal:11434
+    ```
+
+    ![Image](https://github.com/user-attachments/assets/8b940ad6-a2a1-4a76-b120-ab8835f551e2)
 
     Para saber si funciona la conexión con la API, revisar si ya aparecen modelos.
 
@@ -163,13 +173,14 @@ Antes de comenzar, asegurarse de tener instalado:
     ollama run <model_name>
     ```
 
-    Recomendamos usar el modelo: **anindya/prem1b-sql-ollama-fp116**:
+    Recomendamos usar el modelo: **gemma3:4b**:
     ```bash
-    ollama run anindya/prem1b-sql-ollama-fp116
+    ollama run gemma3:4b
     ```
+    > Este modelo pesa aproximadamente 3gb
 
 8. **Probar el proyecto**
 
     Para probar si funciona, deben primero apretar en "controles" (ícono al lado de las opciones de usuario) y desactivar "Transmisión Directa de la Respuesta del Chat".
 
-    De esta manera ya debería funcionar mandarle un prompt. Importante recordar que el modelo no mantiene una conversación, solo responde a peticiones sobre la base de datos.
+    De esta manera ya debería funcionar mandarle un prompt.

@@ -1,0 +1,34 @@
+<<<<<<< HEAD
+=======
+Disease statistical analysis:
+
+party_party contains personal data as name address and other stufff
+
+gnuhealth_patient_disease stores diseases per patient. It references gnuhealth_pathology via pathology and gnuhealth_patient via name.
+
+Table Aliases:
+- pathology → gnuhealth_pathology
+
+table_name: gnuhealth_pathology
+
+columns: [
+  [id, integer],
+  [create_date, timestamp(6)],
+  [write_date, timestamp(6)],
+  [create_uid, integer],
+  [write_uid, integer],
+  [category, integer],
+  [code, character varying],
+  [name, character varying],
+  [info, text],
+  [protein, character varying],
+  [gene, character varying],
+  [chromosome, character varying],
+  [active, boolean],
+  [uri, character varying]
+]
+
+Foreign_Keys: [
+  [category, gnuhealth_pathology_category]
+]
+>>>>>>> 98bcdebb62204e6a2fa0354252884d9c04de7821

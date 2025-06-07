@@ -120,9 +120,14 @@ async def chat_completions(request: ChatCompletionRequest, authorization: str = 
     response, tipo = agent.generate_response(user_question)
 
     if tipo in ["natural", "sql_result"]:
-        answer = response.get("content", "Respuesta vacía.")
+        if response.get("content", None):
+            answer = response["content"]
+        elif response.get("response", None):
+            answer = response["response"]
+        else:
+            answer = "No se pudo generar una respuesta válida."
     elif tipo == "error":
-        answer = response.get("error", "Ocurrió un error inesperado.")
+        answer = response.get("error", f"Ocurrió un error inesperado. {response}")
     elif tipo == "error_handled":
         if "content" in response:
             answer = response["content"]
