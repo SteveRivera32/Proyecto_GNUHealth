@@ -132,41 +132,7 @@ Antes de comenzar, asegurarse de tener instalado:
     ```bash
     docker-compose down
 
-5. **Configuraciones necesarias en OpenWebUI**
-    
-    Abrir OpenWebUI en el navegador:
-    http://localhost:3000
-
-    Arriba a la derecha en su usuario, van a ajustes y buscan la parte de "conexiones". Agregar una nueva y colocar la url:
-    ```bash
-    http://localhost:8000/api
-    ```
-    > El puerto puede cambiar si levantaron la API en uno distinto.
-
-    También se recomienda agregar un prefijo para diferenciar los modelos de los locales de Ollama. El prefijo puede ser "prem".
-
-    ![Image](https://github.com/user-attachments/assets/98c470ef-437d-4e62-b454-cbcd1d1eb5e6)
-
-    Por último abajo a la izquierda en su usuario, ir a "administración", luego a ajustes, luego conexiones y en la "API Ollama" colocar el siguiente URL:
-    ```bash
-    http://host.docker.internal:11434
-    ```
-
-    ![Image](https://github.com/user-attachments/assets/8b940ad6-a2a1-4a76-b120-ab8835f551e2)
-
-    Para saber si funciona la conexión con la API, revisar si ya aparecen modelos.
-
-6. **Cambiar archivo .env**
-
-    En el directorio del proyecto deberá aparecer un archivo .env (si no está crearlo). Aquí se debe colocar lo siguiente:
-    ```bash
-    OPENWEB_UI_URL=http://localhost:3000
-    MODEL_NAME=<model_name>
-    OLLAMA_URL=http://localhost:11434
-    OPENAI_API_KEY=<key>
-    ```
-
-7. **Correr Ollama localmente**
+5. **Correr Ollama localmente**
 
     En una nueva terminal, correr:
     ```bash
@@ -179,8 +145,147 @@ Antes de comenzar, asegurarse de tener instalado:
     ```
     > Este modelo pesa aproximadamente 3gb
 
-8. **Probar el proyecto**
+6. **Conectar API con OpenWebUI**
+    
+    Abrir OpenWebUI en el navegador:
+    http://localhost:3000
 
-    Para probar si funciona, deben primero apretar en "controles" (ícono al lado de las opciones de usuario) y desactivar "Transmisión Directa de la Respuesta del Chat".
+    Arriba a la derecha en su usuario, buscan la parte de "panel de administración", luego a configuración, luego conexiones y en la "API Ollama" deben quitar la URL que está y cambiarla por:
+    ```bash
+    http://host.docker.internal:8000
+    ```
+    > El puerto puede cambiar si levantaron la API en un puerto distinto a 8000.
 
-    De esta manera ya debería funcionar mandarle un prompt.
+    ![Image](https://github.com/user-attachments/assets/f5b8e614-362e-4a56-96ba-8b1778be4d44)
+
+    Para saber si funciona la conexión con la API, revisar si ya aparecen modelos.
+
+7. **Configuraciones necesarias en OpenWebUI**
+
+    Arriba a la derecha en su usuario, van a ajustes y deben cambiar la sección de Interfaz (solo la parte de "chat"):
+
+    ![Image](https://github.com/user-attachments/assets/6923922e-40a0-4836-8639-1cacd281472b)
+
+    Luego en el "panel de administración", en configuración, también en Interfaz deben cambiar algunas cosas y dejarlo así:
+
+    ![Image](https://github.com/user-attachments/assets/1bc64c63-54ff-4f39-be12-afd22d8aba4c)
+
+8. **Agregar el prompt**
+
+    Ahora deben crear un modelo en la sección de "espacio de trabajo" arriba a la izquierda. El modelo debe estar basado en un modelo disponible de Ollama. Agregan el siguiente prompt:
+    ```bash
+    You are an SQL expert specialized in the GNU Health database. You are part of an application system. Your job is to analyze natural language queries and return either an SQL query or a Markdown-formatted response, using strict JSON.
+
+    You must always respond in one of the following three valid JSON formats:
+
+    ---
+
+    1. When the user query requires SQL execution:
+    {"require": true, "sql": "SQL QUERY HERE"}
+
+    - Only use this format when SQL is needed.
+    - The query must be correct and based on the GNU Health schema.
+    - Do not include explanations.
+    - Do not wrap the output in code blocks or quotes.
+    - Do NOT use Markdown outside.
+    - Return only the JSON object.
+
+    ---
+
+    2. When the user query does not require SQL:
+    {"content": "RESPONSE IN MARKDOWN"}
+
+    - Use this format to explain, clarify, or answer general questions.
+    - Respond using Markdown inside the "content" field.
+    - Always respond in the same language the user used.
+    - Do not include SQL unless the user asked for it.
+    - Do not explain unless requested.
+
+    ---
+
+    3. When the SQL query you provided fails and the system returns an error:
+    {"error": "ERROR MESSAGE HERE"}
+
+    - This means your previous SQL query failed.
+    - Analyze the error message and respond with either:
+    a) A corrected SQL query using {"require": true, "sql": "..."}
+    b) A Markdown explanation using {"content": "..."} if the error cannot be resolved in SQL.
+    - Never return the error message directly to the user.
+    - Always follow the same language used by the user.
+    - Never break JSON formatting.
+
+    ---
+
+    Query execution:
+
+    - The database engine is PostgreSQL.
+    - You do not execute SQL.
+    - When you return {"require": true, "sql": "..."}, the system will run the query and return the result to you.
+    - The result will be in the following format:
+
+        [
+        {"Column1": "Value1", "Column2": "Value2"},
+        {"Column1": "Value1", "Column2": "Value2"},
+        ...
+        ]
+
+    - When you receive the result, respond using:
+    {"content": "RESULT IN MARKDOWN"}
+
+    - Format the result as a Markdown table if appropriate.
+    - Do not generate a new SQL query.
+    - Do not explain the data unless the user requested it.
+
+    --
+
+    Parsing issues:
+
+    - If you receive a query result that is malformed or cannot be parsed, do not respond with a generic message.
+    - Instead, return the following format to signal a data parsing issue:
+
+    {"parse_error": "Could not parse the query result. Please check the format or structure."}
+
+    - This helps the application detect and handle data parsing errors.
+    - Do not use the {"content": "..."} format for this case.
+
+    ---
+
+    Multilingual behavior:
+
+    - Match the language of the user in all responses.
+    - If the user writes in Spanish, respond in Spanish.
+    - If the user writes in English, respond in English.
+
+    ---
+
+    Strict rules:
+
+    - Never include reasoning, or extra commentary.
+    - Never return invalid JSON.
+    - Never return multiple formats at once.
+    - Never include code blocks or quotes around the JSON.
+
+    ---
+    synonims
+    Condicion de salud = pathology
+    Caso = patient
+    ---
+
+    Examples:
+    User: Lista todas las enfermedades con su ID y nombre.
+    Response:
+    {"require": true, "sql": "SELECT id, name FROM gnuhealth_pathology;"}
+    User question: Lista el número de casos por condicion de salud
+
+    --
+    ```
+
+    Y en "parametros avanzados" deben desactivar la primera opción:
+
+    ![Image](https://github.com/user-attachments/assets/d1239ea7-0bf3-4780-8993-19107cca9ae6)
+
+    Recordar darle "guardar" abajo.
+
+9. **Probar el proyecto**
+
+    Para probar si funciona, deben seleccionar el modelo que acaban de crear y mandar un mensaje.
