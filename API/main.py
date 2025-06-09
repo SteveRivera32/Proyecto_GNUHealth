@@ -9,8 +9,9 @@ import time
 import os
 import json
 from dotenv import load_dotenv
+import httpx
 
-from typing import Optional
+from typing import Optional, List, Dict
 from fastapi import Header
 
 # Cargar variables de entorno
@@ -28,71 +29,112 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Lista de modelos disponibles
-available_models = [
-    {
-        "id": "gemma3:4b",
-        "object": "model",
-        "created": 2,
-        "owned_by": "premai-open-source"
-    },
-    {
-        "id": "gemma3:12b-it-qat",
-        "object": "model",
-        "created": 3,
-        "owned_by": "premai-open-source"
-    },
-    {
-        "id": "gemma3:27b-it-qat",
-        "object": "model",
-        "created": 4,
-        "owned_by": "premai-open-source"
-    },
-]
+# Configuración de Ollama
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+OLLAMA_MODELS_ENDPOINT = f"{OLLAMA_BASE_URL}/api/tags"
 
-# Mapeo de modelos al formato que espera OpenWebUI/Ollama API
-def get_tags_response_v2():
-    return [
-        {
-            "name": m["id"],
-            "modified_at": "2024-01-01T00:00:00Z",
-            "size": 1000000000,
-            "digest": "sha256:fakehash",
-            "details": {
-                "family": "custom",
-                "parameter_size": "N/A",
-                "quantization_level": "N/A"
-            }
-        } for m in available_models
-    ]
+# Cache para modelos
+available_models_cache = []
+last_cache_update = 0
+CACHE_TTL = 300  # 5 minutos en segundos
 
-def get_tags_response():
-    return [
-        {
-            "name": m["id"],
-            "model": m["id"],
-            "modified_at": "2025-02-19T13:31:57.5607265-06:00",
-            "size": 2019393189,
-            "digest": "a80c4f17acd55265feec403c7aef86be0c25983ab279d83f3bcd3abbcb5b8b72",
-            "details": {
-                "parent_model": "",
-                "format": "gguf",
-                "family": m["id"].split(":")[0] if ":" in m["id"] else "custom",
-                "families": [
-                    m["id"].split(":")[0] if ":" in m["id"] else "custom"
-                ],
-                "parameter_size": "3.2B",
-                "quantization_level": "Q4_K_M"
-            }
-        } for m in available_models
-    ]
+async def fetch_ollama_models() -> List[Dict]:
+    """Obtiene la lista de modelos disponibles desde Ollama"""
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(OLLAMA_MODELS_ENDPOINT, timeout=10.0)
+            response.raise_for_status()
+            data = response.json()
+            return data.get("models", [])
+    except Exception as e:
+        print(f"Error al obtener modelos de Ollama: {str(e)}")
+        return []
+
+async def get_available_models() -> List[Dict]:
+    """Obtiene los modelos disponibles, usando cache si es válido"""
+    global available_models_cache, last_cache_update
+    
+    current_time = time.time()
+    if current_time - last_cache_update < CACHE_TTL and available_models_cache:
+        return available_models_cache
+    
+    ollama_models = await fetch_ollama_models()
+    
+    # Transformar los modelos al formato que espera tu API
+    transformed_models = []
+    for idx, model in enumerate(ollama_models, start=1):
+        model_name = model.get("name", "")
+        transformed_models.append({
+            "id": model_name,
+            "object": "model",
+            "created": idx,
+            "owned_by": "ollama"
+        })
+    
+    available_models_cache = transformed_models
+    last_cache_update = current_time
+    return transformed_models
+
+async def get_tags_response(models: List[Dict]) -> List[Dict]:
+    """Genera la respuesta para el endpoint /api/tags con datos reales de Ollama"""
+    response = []
+    
+    async with httpx.AsyncClient() as client:
+        for m in models:
+            try:
+                # Obtener detalles específicos del modelo desde Ollama
+                model_info = await client.post(f"{OLLAMA_BASE_URL}/api/show", json={"name": m["id"]})
+                model_info.raise_for_status()
+                model_data = model_info.json()
+                
+                response.append({
+                    "name": m["id"],
+                    "model": m["id"],
+                    "modified_at": model_data.get("modified_at", "2025-02-19T13:31:57.5607265-06:00"),
+                    "size": model_data.get("size", 2019393189),
+                    "digest": model_data.get("digest", "a80c4f17acd55265feec403c7aef86be0c25983ab279d83f3bcd3abbcb5b8b72"),
+                    "details": {
+                        "parent_model": model_data.get("parent_model", ""),
+                        "format": model_data.get("format", "gguf"),
+                        "family": m["id"].split(":")[0] if ":" in m["id"] else "custom",
+                        "families": [
+                            m["id"].split(":")[0] if ":" in m["id"] else "custom"
+                        ],
+                        "parameter_size": model_data.get("parameter_size", "3.2B"),
+                        "quantization_level": model_data.get("quantization_level", "Q4_K_M")
+                    }
+                })
+            except Exception as e:
+                print(f"Error obteniendo detalles para el modelo {m['id']}: {str(e)}")
+                # Fallback a valores por defecto si hay error
+                response.append({
+                    "name": m["id"],
+                    "model": m["id"],
+                    "modified_at": "2025-02-19T13:31:57.5607265-06:00",
+                    "size": 2019393189,
+                    "digest": "a80c4f17acd55265feec403c7aef86be0c25983ab279d83f3bcd3abbcb5b8b72",
+                    "details": {
+                        "parent_model": "",
+                        "format": "gguf",
+                        "family": m["id"].split(":")[0] if ":" in m["id"] else "custom",
+                        "families": [
+                            m["id"].split(":")[0] if ":" in m["id"] else "custom"
+                        ],
+                        "parameter_size": "3.2B",
+                        "quantization_level": "Q4_K_M"
+                    }
+                })
+    
+    return response
 
 # /api/tags → usado por OpenWebUI para leer modelos
 @app.get("/api/tags")
 async def list_tags():
     print("/api/tags fue consultado")
+    models = await get_available_models()
+    models_details = await get_tags_response(models)
     return JSONResponse(content={
-        "models": get_tags_response()
+        "models": models_details
     })
 
 # /api/models → usado por OpenWebUI para leer modelos (estilo OpenAI)
@@ -102,6 +144,7 @@ async def list_models(authorization: Optional[str] = Header(default=None)):
     print("Authorization header:", authorization)
     
     try:
+        models = await get_available_models()
         return JSONResponse(
             status_code=200,
             content={
@@ -112,7 +155,7 @@ async def list_models(authorization: Optional[str] = Header(default=None)):
                         "object": "model",
                         "created": m["created"],
                         "owned_by": m["owned_by"]
-                    } for m in available_models
+                    } for m in models
                 ]
             }
         )
@@ -143,7 +186,8 @@ async def generate_ollama_style(request: Request):
     model_id = body.get("model", "gnutest")
     prompt = body.get("prompt", "")
 
-    if model_id not in [m["id"] for m in available_models]:
+    models = await get_available_models()
+    if model_id not in [m["id"] for m in models]:
         raise HTTPException(status_code=404, detail="404: Model not listed in /api/tags")
 
     agent = ag.Agent(model_id)
@@ -172,7 +216,8 @@ async def chat_completions(request: ChatCompletionRequest, authorization: str = 
     print("Recibido en /api/chat")
     print("Modelo:", request.model)
 
-    if request.model not in [m["id"] for m in available_models]:
+    models = await get_available_models()
+    if request.model not in [m["id"] for m in models]:
         print("Modelo no encontrado en la lista de modelos disponibles.")
         raise HTTPException(status_code=404, detail="404: Model not listed in /api/models")
 
@@ -195,7 +240,10 @@ async def chat_completions(request: ChatCompletionRequest, authorization: str = 
             }]
         }
 
+    start_time = time.time()
     print("Procesando mensajes de la solicitud...")
+    
+    # Procesamiento del sistema prompt y mensajes
     system_prompt = None
     for msg in request.messages:
         if msg.role == "system":
@@ -216,7 +264,10 @@ async def chat_completions(request: ChatCompletionRequest, authorization: str = 
     if not user_question:
         raise HTTPException(status_code=400, detail="No se encontró un mensaje de usuario válido.")
 
+    # Medición del tiempo real de procesamiento
+    processing_start = time.time()
     response, tipo = agent.generate_response(user_question, system_prompt=system_prompt)
+    processing_duration = time.time() - processing_start
 
     if tipo in ["natural", "sql_result"]:
         answer = response.get("content") or response.get("response") or ""
@@ -232,25 +283,35 @@ async def chat_completions(request: ChatCompletionRequest, authorization: str = 
     else:
         answer = "No se pudo procesar la respuesta."
 
-    # Armar la respuesta en el formato esperado
+    # Tiempos realistas basados en el procesamiento real
+    total_duration = time.time() - start_time
+    load_duration = total_duration * 0.8  # 80% del tiempo es "carga"
+    eval_duration = total_duration * 0.15  # 15% es evaluación
+    prompt_eval_duration = total_duration * 0.05  # 5% es evaluación del prompt
+
+    # Estimar conteos basados en la longitud de la respuesta
+    eval_count = max(10, len(answer.split()) // 5)
+    prompt_eval_count = max(5, len(user_question.split()) // 3)
+
+    # Armar la respuesta con métricas realistas
     respuesta = {
         "model": request.model,
-        "created_at": time.time(),
+        "created_at": start_time,
         "message": {
             "role": "assistant",
             "content": answer
         },
         "done_reason": "stop",
         "done": True,
-        "total_duration": 5551148643,
-        "load_duration": 4891918024,
-        "prompt_eval_count": 10,
-        "prompt_eval_duration": 464582854,
-        "eval_count": 13,
-        "eval_duration": 192853402
+        "total_duration": int(total_duration * 1e9),  # Convertir a nanosegundos
+        "load_duration": int(load_duration * 1e9),
+        "prompt_eval_count": prompt_eval_count,
+        "prompt_eval_duration": int(prompt_eval_duration * 1e9),
+        "eval_count": eval_count,
+        "eval_duration": int(eval_duration * 1e9)
     }
 
-    return respuesta 
+    return respuesta
 
 # Endpoint para evaluación (dummy)
 @app.post("/eval")
