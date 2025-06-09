@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Request, HTTPException, Header, Response
-from fastapi.responses import StreamingResponse
-from fastapi.responses import JSONResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from agents.response_stream import stream_response
 from models.chat import ChatCompletionRequest, ChatMessage, PromptRequest, PromptResponse, EvalSet
@@ -8,91 +7,184 @@ import agents.agent as ag
 import hashlib
 import time
 import os
-import pandas as pd
+import json
 from dotenv import load_dotenv
 
-# Cargar variables de entorno desde un archivo .env
+from typing import Optional
+from fastapi import Header
+
+# Cargar variables de entorno
 load_dotenv()
 
-# Inicializar la aplicación FastAPI
+# Inicializar FastAPI
 app = FastAPI()
 
-# Middleware para permitir solicitudes desde otras fuentes (CORS)
-# Updated CORS settings to allow all origins
+# Configurar CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Allows all methods
-    allow_headers=["*"],  # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-# Endpoint para procesar prompts y devolver respuestas en formato PromptResponse
-@app.post("/ask", response_model=PromptResponse)
-async def handle_prompt(request: PromptRequest):
-    # Instanciar el agente con el modelo definido en .env
-    agent = ag.Agent(os.getenv("MODEL_NAME"))
-
-    # Generar respuesta y dataframe con resultados
-    answer, df = agent.generate_response(request.prompt)
-
-    # Devolver la respuesta en formato JSON
-    return JSONResponse(content={
-        "answer": answer,
-        "results": df
-    })
-
-# Lista de modelos disponibles (imitando API de OpenAI)
+# Lista de modelos disponibles
 available_models = [
     {
-        "id": "gnutest",
-        "object": "model",
-        "created": 1,
-        "owned_by": "google-open-source"
-    },
-       {
         "id": "gemma3:4b",
         "object": "model",
         "created": 2,
         "owned_by": "premai-open-source"
     },
+    {
+        "id": "gemma3:12b-it-qat",
+        "object": "model",
+        "created": 3,
+        "owned_by": "premai-open-source"
+    },
+    {
+        "id": "gemma3:27b-it-qat",
+        "object": "model",
+        "created": 4,
+        "owned_by": "premai-open-source"
+    },
 ]
 
-# Endpoint para listar modelos disponibles (para compatibilidad con clientes tipo OpenAI)
-@app.get("/api/models")
-async def list_models():
-    print("/api/models fue consultado")
+# Mapeo de modelos al formato que espera OpenWebUI/Ollama API
+def get_tags_response_v2():
+    return [
+        {
+            "name": m["id"],
+            "modified_at": "2024-01-01T00:00:00Z",
+            "size": 1000000000,
+            "digest": "sha256:fakehash",
+            "details": {
+                "family": "custom",
+                "parameter_size": "N/A",
+                "quantization_level": "N/A"
+            }
+        } for m in available_models
+    ]
+
+def get_tags_response():
+    return [
+        {
+            "name": m["id"],
+            "model": m["id"],
+            "modified_at": "2025-02-19T13:31:57.5607265-06:00",
+            "size": 2019393189,
+            "digest": "a80c4f17acd55265feec403c7aef86be0c25983ab279d83f3bcd3abbcb5b8b72",
+            "details": {
+                "parent_model": "",
+                "format": "gguf",
+                "family": m["id"].split(":")[0] if ":" in m["id"] else "custom",
+                "families": [
+                    m["id"].split(":")[0] if ":" in m["id"] else "custom"
+                ],
+                "parameter_size": "3.2B",
+                "quantization_level": "Q4_K_M"
+            }
+        } for m in available_models
+    ]
+
+# /api/tags → usado por OpenWebUI para leer modelos
+@app.get("/api/tags")
+async def list_tags():
+    print("/api/tags fue consultado")
     return JSONResponse(content={
-        "object": "list",
-        "data": available_models
+        "models": get_tags_response()
     })
 
-# Endpoint de completación de chat estilo OpenAI (con respuesta generada por el modelo)
-@app.post("/api/chat/completions")
-async def chat_completions(request: ChatCompletionRequest, authorization: str = Header(default=None)):
-    print("Recibido en /chat/completions")
-    print("Modelo:", request.model)
-    #print("Mensajes:", [m.content for m in request.messages])
+# /api/models → usado por OpenWebUI para leer modelos (estilo OpenAI)
+@app.get("/api/models")
+async def list_models(authorization: Optional[str] = Header(default=None)):
+    print("/api/models fue consultado")
+    print("Authorization header:", authorization)
+    
+    try:
+        return JSONResponse(
+            status_code=200,
+            content={
+                "object": "list",
+                "data": [
+                    {
+                        "id": m["id"],
+                        "object": "model",
+                        "created": m["created"],
+                        "owned_by": m["owned_by"]
+                    } for m in available_models
+                ]
+            }
+        )
+    except Exception as e:
+        print(f"Error en /api/models: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "error": "Internal Server Error",
+                "message": str(e)
+            }
+        )
 
-    # Verificar si el modelo es válido
+# /api/version → versión ficticia
+@app.get("/api/version")
+async def api_version():
+    print("/api/version fue consultado")
+    return JSONResponse(content={
+        "version": "1.0.0",
+    })
+
+# /api/generate → endpoint estilo Ollama
+@app.post("/api/generate")
+async def generate_ollama_style(request: Request):
+    body = await request.json()
+    print("Recibido en /api/generate:", body)
+
+    model_id = body.get("model", "gnutest")
+    prompt = body.get("prompt", "")
+
+    if model_id not in [m["id"] for m in available_models]:
+        raise HTTPException(status_code=404, detail="404: Model not listed in /api/tags")
+
+    agent = ag.Agent(model_id)
+    response, tipo = agent.generate_response(prompt)
+
+    if tipo in ["natural", "sql_result"]:
+        answer = response.get("content") or response.get("response") or ""
+    elif tipo == "error":
+        answer = response.get("error", "Error inesperado.")
+    else:
+        answer = "No se pudo procesar la respuesta."
+
+    return JSONResponse(content={
+        "model": model_id,
+        "created_at": "2024-01-01T00:00:00Z",
+        "message": {
+            "role": "assistant",
+            "content": answer
+        },
+        "done": True
+    })
+
+# /api/chat/completions → endpoint estilo OpenAI
+@app.post("/api/chat")
+async def chat_completions(request: ChatCompletionRequest, authorization: str = Header(default=None)):
+    print("Recibido en /api/chat")
+    print("Modelo:", request.model)
+
     if request.model not in [m["id"] for m in available_models]:
+        print("Modelo no encontrado en la lista de modelos disponibles.")
         raise HTTPException(status_code=404, detail="404: Model not listed in /api/models")
 
-    # Para debug, ver si Ollama tiene ese modelo
-    if request.model == "gnutest":
-        print("⚠️ WARNING: gnutest no es un modelo real en Ollama (esto es solo un ID de prueba).")
-
-    # ✅ Nueva validación correcta (la que te recomiendo poner)
     if not request.model:
-        print("Modelo faltante")
+        print("Falta el modelo en la solicitud.")
         raise HTTPException(status_code=400, detail="Falta el modelo.")
 
     if request.messages is None:
-        print("Messages es None (no permitido)")
+        print("Messages es None en la solicitud.")
         raise HTTPException(status_code=400, detail="Messages no puede ser None.")
 
     if len(request.messages) == 0:
-        print("Messages vacío → respuesta vacía")
         return {
             "id": "premSQLChat-empty",
             "object": "chat.completion",
@@ -103,23 +195,18 @@ async def chat_completions(request: ChatCompletionRequest, authorization: str = 
             }]
         }
 
-    # 🔥 Extraer system prompt (si existe)
+    print("Procesando mensajes de la solicitud...")
     system_prompt = None
     for msg in request.messages:
         if msg.role == "system":
             system_prompt = msg.content
             break
 
-    print("System prompt cargado\n" if system_prompt else "No system prompt\n")
-
     agent = ag.Agent(request.model)
-
-    # Reconstruir chat_history desde request.messages (así se mantiene la conversación)
-    agent.chat_history = [ { "role": m.role, "content": m.content } for m in request.messages ]
+    agent.chat_history = [{ "role": m.role, "content": m.content } for m in request.messages]
 
     chat_id = "premSQLChat-" + hashlib.sha256(str(request.messages).encode()).hexdigest()[:24]
 
-    # Tomar el último mensaje del usuario
     user_question = None
     for msg in reversed(request.messages):
         if msg.role == "user":
@@ -132,14 +219,9 @@ async def chat_completions(request: ChatCompletionRequest, authorization: str = 
     response, tipo = agent.generate_response(user_question, system_prompt=system_prompt)
 
     if tipo in ["natural", "sql_result"]:
-        if response.get("content", None):
-            answer = response["content"]
-        elif response.get("response", None):
-            answer = response["response"]
-        else:
-            answer = "No se pudo generar una respuesta válida."
+        answer = response.get("content") or response.get("response") or ""
     elif tipo == "error":
-        answer = response.get("error", f"Ocurrió un error inesperado. {response}")
+        answer = response.get("error", "Error inesperado.")
     elif tipo == "error_handled":
         if "content" in response:
             answer = response["content"]
@@ -150,33 +232,28 @@ async def chat_completions(request: ChatCompletionRequest, authorization: str = 
     else:
         answer = "No se pudo procesar la respuesta."
 
-    return {
-        "id": chat_id,
-        "object": "chat.completion",
-        "created": time.time(),
+    # Armar la respuesta en el formato esperado
+    respuesta = {
         "model": request.model,
-        "choices": [{
-            "message": ChatMessage(role="assistant", content=answer),
-        }]
+        "created_at": time.time(),
+        "message": {
+            "role": "assistant",
+            "content": answer
+        },
+        "done_reason": "stop",
+        "done": True,
+        "total_duration": 5551148643,
+        "load_duration": 4891918024,
+        "prompt_eval_count": 10,
+        "prompt_eval_duration": 464582854,
+        "eval_count": 13,
+        "eval_duration": 192853402
     }
 
-# Soporte para solicitudes OPTIONS desde frontend (preflight)
-@app.options("/api/models")
-async def options_models():
-    return Response(
-        status_code=204,
-        headers={
-            "Allow": "GET, POST, OPTIONS",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Authorization, Content-Type"
-        }
-    )
+    return respuesta 
 
-# Endpoint de evaluación (pendiente de implementación)
+# Endpoint para evaluación (dummy)
 @app.post("/eval")
 async def make_evaluation(eval_set: EvalSet):
-    # Resultado simulado de evaluación
     results = 0
-
     return JSONResponse(content={"results": results})
