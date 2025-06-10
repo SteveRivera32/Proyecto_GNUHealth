@@ -90,7 +90,7 @@ available_models = [
         "created": 2,
         "owned_by": "premai-open-source"
     }, {
-        "id": "gemini-2.5-flash-preview-04-17",
+       "id": "gemini-2.5-flash-preview-04-17",
         "object": "model",
         "created": 2,
         "owned_by": "premai-open-source"
