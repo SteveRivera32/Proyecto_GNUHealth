@@ -78,7 +78,7 @@ def create_vector_store():
     return vector_store
 
 def load_docs():
-    folder_path = "Reports-TableDocumentation/Tables"
+    folder_path = "Tables"
     pattern = os.path.join(folder_path, "*.txt")
 
     files = glob(pattern)
@@ -135,7 +135,7 @@ def load_kb_to_redis():
  
 
 def load_few_shots():
-    with open("redis_db/Reports-TableDocumentation/ReportsExample.md", "r", encoding="utf-8") as f:
+    with open("redis_db/ReportsExample.md", "r", encoding="utf-8") as f:
         return f.read()
 def query_tables(input_text):
     vector_store = create_vector_store()
