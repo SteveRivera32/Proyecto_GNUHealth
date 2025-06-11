@@ -1,0 +1,50 @@
+tabla: gnuhealth_patient_disease
+descripción: Registra los diagnósticos y enfermedades de cada paciente, incluyendo severidad, fechas relevantes, tratamiento, profesional tratante y metadatos clínicos (alergias, infecciosidad, estado, etc.).
+
+columnas:
+  id: integer, clave primaria autoincremental
+  create_date: timestamp, fecha de creación del registro
+  write_date: timestamp, fecha de última modificación
+  create_uid: integer, ID del usuario que creó el registro
+  write_uid: integer, ID del usuario que modificó por última vez
+  treatment_description: varchar, descripción del tratamiento administrado
+  healed_date: date, fecha de curación o resolución de la enfermedad
+  pathology: integer, patología diagnosticada (FK a gnuhealth_pathology.id)
+  disease_severity: varchar, severidad de la enfermedad (leve, moderada, grave, etc.)
+  is_allergy: boolean, indica si se trata de una enfermedad alérgica
+  healthprof: integer, profesional de salud responsable (FK a gnuhealth_healthprofessional.id)
+  pregnancy_warning: boolean, advertencia si el diagnóstico afecta el embarazo
+  weeks_of_pregnancy: integer, semana de gestación en la que se contrajo la enfermedad
+  is_on_treatment: boolean, indica si el paciente está actualmente en tratamiento
+  diagnosed_date: date, fecha de diagnóstico
+  extra_info: text, información adicional
+  status: varchar, estado del diagnóstico (activo, resuelto, crónico, etc.)
+  is_active: boolean, indica si la enfermedad está activa
+  date_stop_treatment: date, fecha de fin del tratamiento
+  pcs_code: integer, código de procedimiento (FK a gnuhealth_procedure.id)
+  is_infectious: boolean, indica si la enfermedad es infecciosa
+  allergy_type: varchar, tipo de alergia (alimentaria, medicamentosa, ambiental, etc.)
+  name: integer, paciente (FK a gnuhealth_patient.id)
+  age: integer, edad del paciente al momento del diagnóstico
+  date_start_treatment: date, fecha de inicio del tratamiento
+  short_comment: varchar, comentarios breves
+  newborn_id: integer, ID de recién nacido asociado (FK a gnuhealth_newborn.id)
+  institution: integer, institución de salud (FK a gnuhealth_institution.id)
+  lab_confirmed: boolean, confirmación de laboratorio
+  lab_test: integer, ID de la prueba de laboratorio asociada (FK a gnuhealth_lab.id)
+  est_dodx: boolean, diagnóstico estimado (no confirmado)
+
+llaves_foráneas:
+  pathology       → gnuhealth_pathology(id)
+  healthprof      → gnuhealth_healthprofessional(id)
+  pcs_code        → gnuhealth_procedure(id)
+  name            → gnuhealth_patient(id)
+  newborn_id      → gnuhealth_newborn(id)
+  institution     → gnuhealth_institution(id)
+  lab_test        → gnuhealth_lab(id)
+
+índices:
+  - clave primaria: id
+  - índice: allergy_type
+  - índice: disease_severity
+  - índice: status

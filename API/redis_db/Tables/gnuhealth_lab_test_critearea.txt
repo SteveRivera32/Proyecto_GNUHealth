@@ -1,0 +1,32 @@
+tabla: gnuhealth_lab_test_critearea
+descripción: Almacena los criterios de evaluación de resultados para cada prueba de laboratorio, incluyendo valores de referencia, unidades, resultados obtenidos y advertencias asociadas.
+
+columnas:
+  id: integer, clave primaria autoincremental
+  create_date: timestamp, fecha de creación del registro
+  write_date: timestamp, fecha de última modificación
+  create_uid: integer, ID del usuario que creó el registro
+  write_uid: integer, ID del usuario que modificó por última vez
+  name: varchar, nombre del analito o parámetro evaluado
+  sequence: integer, orden de aparición en los informes
+  result_text: varchar, resultado en formato texto (cuando no es numérico)
+  test_type_id: integer, tipo de prueba a la que pertenece (FK a gnuhealth_lab_test_type.id)
+  normal_range: text, valores de referencia o rango normal (en texto libre)
+  units: integer, unidades asociadas al resultado (FK a gnuhealth_lab_test_units.id)
+  upper_limit: double, límite superior del rango normal
+  lower_limit: double, límite inferior del rango normal
+  result: double, resultado numérico de la prueba
+  excluded: boolean, indica si el analito fue excluido del informe
+  remarks: varchar, observaciones o comentarios sobre el resultado
+  gnuhealth_lab_id: integer, referencia al caso de laboratorio (FK a gnuhealth_lab.id)
+  warning: boolean, indica si el resultado genera una advertencia
+  code: varchar, código interno del criterio
+
+llaves_foráneas:
+  test_type_id     → gnuhealth_lab_test_type(id)
+  units            → gnuhealth_lab_test_units(id)
+  gnuhealth_lab_id → gnuhealth_lab(id)
+
+índices:
+  - clave primaria: id
+  - índices: code, gnuhealth_lab_id, name, test_type_id

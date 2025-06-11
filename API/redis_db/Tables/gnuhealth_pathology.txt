@@ -1,0 +1,26 @@
+tabla: gnuhealth_pathology
+descripción: Catálogo de enfermedades o condiciones médicas. Contiene información estandarizada como el código, nombre, clasificación genética y categoría principal, usada para registrar diagnósticos en los pacientes.
+
+columnas:
+  id: integer, clave primaria autoincremental
+  create_date: timestamp, fecha de creación del registro
+  write_date: timestamp, fecha de última modificación
+  create_uid: integer, ID del usuario que creó el registro
+  write_uid: integer, ID del usuario que modificó por última vez
+  category: integer, categoría principal de la enfermedad (FK a gnuhealth_pathology_category.id)
+  code: varchar, código de la enfermedad (puede ser estándar como CIE-10, SNOMED, etc.)
+  name: varchar, nombre de la enfermedad o condición
+  info: text, información adicional
+  protein: varchar, proteína relacionada (si aplica)
+  gene: varchar, gen relacionado (si aplica)
+  chromosome: varchar, cromosoma afectado (si aplica)
+  active: boolean, indica si la patología está activa y disponible para ser usada
+  uri: varchar, enlace o identificador externo (por ejemplo, en bases de datos médicas)
+
+llaves_foráneas:
+  category → gnuhealth_pathology_category(id)
+
+índices:
+  - clave primaria: id
+  - índice único: code
+  - índice: active

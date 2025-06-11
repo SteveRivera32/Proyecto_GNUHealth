@@ -1,0 +1,134 @@
+tabla: gnuhealth_patient
+descripción: Contiene información médica, social, demográfica y de estilo de vida de los pacientes registrados en GNU Health.
+
+columnas:
+  id: integer, clave primaria autoincremental
+  create_date: timestamp, fecha de creación del registro
+  write_date: timestamp, fecha de última modificación
+  create_uid: integer, ID del usuario que creó el registro
+  write_uid: integer, ID del usuario que modificó por última vez
+  family: integer, ID de la familia del paciente (FK a gnuhealth_family.id)
+  blood_type: varchar, tipo de sangre del paciente
+  general_info: text, información médica general
+  primary_care_doctor: integer, médico de cabecera (FK a gnuhealth_healthprofessional.id)
+  critical_info: text, información crítica adicional
+  rh: varchar, factor Rh del paciente
+  current_address: integer, dirección temporal (FK a party_address.id)
+  name: integer, ID del paciente (FK a party_party.id)
+  dod: timestamp, fecha de fallecimiento
+  current_insurance: integer, aseguradora actual (FK a gnuhealth_insurance.id)
+  cod: integer, causa de muerte (FK a gnuhealth_pathology.id)
+  deceased: boolean, indica si el paciente ha fallecido
+  works_at_home: boolean, indica si trabaja desde casa
+  prison_current: boolean, indica si está actualmente en prisión
+  domestic_violence: boolean, ha sido víctima de violencia doméstica
+  hostile_area: boolean, vive en zona de riesgo o conflicto
+  sexual_abuse: boolean, ha sufrido abuso sexual
+  hours_outside: integer, horas promedio fuera del hogar por día
+  drug_addiction: boolean, adicción activa a drogas
+  school_withdrawal: boolean, abandono escolar
+  income: varchar, nivel de ingresos del paciente
+  single_parent: boolean, vive en familia monoparental
+  ses_notes: text, notas adicionales sobre situación socioeconómica
+  working_children: boolean, hijos que trabajan
+  teenage_pregnancy: boolean, embarazo adolescente
+  prison_past: boolean, ha estado en prisión anteriormente
+  relative_in_prison: boolean, tiene familiares en prisión
+  pap_test_last: date, fecha del último Papanicolaou
+  menopausal: boolean, es menopáusica
+  menopause: integer, edad en la que llegó la menopausia
+  colposcopy_last: date, fecha de la última colposcopia
+  fertile: boolean, es fértil
+  gravida: integer, número de embarazos
+  pap_test: boolean, se ha realizado Papanicolaou
+  menarche: integer, edad de la primera menstruación
+  colposcopy: boolean, se ha realizado colposcopia
+  mammography_last: date, fecha de la última mamografía
+  full_term: integer, partos a término
+  premature: integer, partos prematuros
+  abortions: integer, abortos
+  stillbirths: integer, mortinatos
+  mammography: boolean, se ha realizado mamografía
+  breast_self_examination: boolean, se realiza autoexploración mamaria
+  sexuality_info: text, información adicional sobre sexualidad
+  smoking_number: integer, cigarrillos por día
+  sexual_partners: varchar, número o tipo de parejas sexuales
+  soft_drinks: boolean, consumo habitual de bebidas azucaradas
+  coffee: boolean, consumo de café
+  exercise_minutes_day: integer, minutos de ejercicio diarios
+  sexual_practices: varchar, prácticas sexuales
+  ex_drug_addict: boolean, ex consumidor de drogas
+  sexual_preferences: varchar, orientación sexual
+  car_child_safety: boolean, usa seguridad infantil en el auto
+  alcohol: boolean, consume alcohol
+  ex_alcoholic: boolean, ex alcohólico
+  age_start_drugs: integer, edad al comenzar a consumir drogas
+  number_of_meals: integer, comidas por día
+  coffee_cups: integer, tazas de café por día
+  exercise: boolean, realiza ejercicio
+  sex_with_prostitutes: boolean, ha tenido sexo con prostitutas
+  sleep_during_daytime: boolean, duerme durante el día
+  age_quit_smoking: integer, edad al dejar de fumar
+  ex_smoker: boolean, ex fumador
+  lifestyle_info: text, información adicional sobre estilo de vida
+  car_seat_belt: boolean, usa cinturón de seguridad
+  diet_info: varchar, tipo de dieta
+  drug_iv: boolean, consume drogas por vía intravenosa
+  second_hand_smoker: boolean, fumador pasivo
+  age_quit_drugs: integer, edad al dejar las drogas
+  alcohol_liquor_number: integer, tragos de licor por día
+  eats_alone: boolean, come solo
+  age_quit_drinking: integer, edad al dejar el alcohol
+  sex_oral: varchar, prácticas de sexo oral
+  home_safety: boolean, el hogar es seguro
+  age_start_drinking: integer, edad al comenzar a beber alcohol
+  first_sexual_encounter: integer, edad de la primera relación sexual
+  smoking: boolean, fuma actualmente
+  sex_anal: varchar, prácticas de sexo anal
+  age_start_smoking: integer, edad al comenzar a fumar
+  sexual_partners_number: integer, número de parejas sexuales
+  car_revision: boolean, realiza revisión técnica de su vehículo
+  motorcycle_rider: boolean, conduce motocicleta
+  helmet: boolean, usa casco
+  alcohol_beer_number: integer, cervezas consumidas por día
+  traffic_laws: boolean, respeta las leyes de tránsito
+  sleep_hours: integer, horas promedio de sueño
+  alcohol_wine_number: integer, copas de vino por día
+  diet: boolean, sigue una dieta actualmente
+  anticonceptive: varchar, método anticonceptivo
+  prostitute: boolean, trabaja como prostituto/a
+  salt: boolean, consumo alto de sal
+  drug_usage: boolean, uso de drogas
+  diet_belief: integer, creencia dietética (FK a gnuhealth_diet_belief.id)
+  vegetarian_type: integer, tipo de vegetarianismo (FK a gnuhealth_vegetarian_types.id)
+  biological_sex: varchar, sexo biológico
+  amputee: boolean, es amputado/a
+  disability: boolean, tiene alguna discapacidad
+  uxo: boolean, vive en zona con riesgo de munición sin explotar
+  amputee_since: date, fecha desde que es amputado/a
+  active: boolean, está activo en el sistema
+  hb: varchar, hemoglobina (valor libre)
+  crit_allergic: boolean, condición crítica - alergias
+  crit_cancer: boolean, condición crítica - cáncer
+  crit_cardio: boolean, condición crítica - cardiovascular
+  crit_cognitive: boolean, condición crítica - cognitiva
+  crit_dbt: boolean, condición crítica - diabetes
+  crit_hbp: boolean, condición crítica - hipertensión
+  crit_immuno: boolean, condición crítica - inmunológica
+  crit_nutrition: boolean, condición crítica - nutricional
+  crit_social: boolean, condición crítica - social
+
+llaves_foráneas:
+  family → gnuhealth_family(id)
+  primary_care_doctor → gnuhealth_healthprofessional(id)
+  current_address → party_address(id)
+  name → party_party(id)
+  current_insurance → gnuhealth_insurance(id)
+  cod → gnuhealth_pathology(id)
+  diet_belief → gnuhealth_diet_belief(id)
+  vegetarian_type → gnuhealth_vegetarian_types(id)
+
+índices:
+  - clave primaria: id
+  - única: name
+  - índice adicional: active

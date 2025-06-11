@@ -1,0 +1,22 @@
+tabla: gnuhealth_lab_test_type
+descripción: Define los tipos de pruebas de laboratorio disponibles, incluyendo nombre, código, descripción y servicio asociado.
+
+columnas:
+  id: integer, clave primaria autoincremental
+  create_date: timestamp, fecha de creación del registro
+  write_date: timestamp, fecha de última modificación
+  create_uid: integer, ID del usuario que creó el registro
+  write_uid: integer, ID del usuario que modificó por última vez
+  info: text, descripción detallada del tipo de prueba
+  code: varchar, código interno del tipo de prueba
+  name: varchar, nombre o título de la prueba
+  product_id: integer, servicio asociado (FK a product_product.id)
+  active: boolean, indica si el tipo de prueba está activo
+
+llaves_foráneas:
+  product_id → product_product(id)
+
+índices:
+  - clave primaria: id
+  - índice único: name
+  - índices: active, code, name
