@@ -1,0 +1,65 @@
+tabla: party_party
+descripción: Contiene la información básica de entidades dentro del sistema (personas, instituciones, pacientes, profesionales de salud, aseguradoras, etc.), actuando como base para identificar a cada parte involucrada en procesos clínicos, administrativos o logísticos.
+
+columnas:
+  id: integer, clave primaria autoincremental
+  create_date: timestamp, fecha de creación del registro
+  write_date: timestamp, fecha de última modificación
+  create_uid: integer, ID del usuario que creó el registro
+  write_uid: integer, ID del usuario que modificó por última vez
+  code: varchar, código único asignado a la entidad
+  code_length: integer, longitud del código (útil para validaciones)
+  active: boolean, indica si la entidad está activa
+  name: varchar, nombre o denominación principal
+  photo: bytea, fotografía o imagen de la entidad
+  alternative_identification: boolean, si tiene identificaciones alternativas
+  is_healthprof: boolean, indica si es un profesional de la salud
+  insurance_company_type: varchar, tipo de aseguradora si aplica
+  internal_user: integer, usuario interno del sistema (FK a res_user.id)
+  activation_date: date, fecha de activación de la entidad
+  citizenship: integer, país de ciudadanía (FK a country_country.id)
+  is_patient: boolean, indica si es un paciente
+  is_insurance_company: boolean, indica si es una aseguradora
+  ref: varchar, identificador único de persona (PUID)
+  lastname: varchar, apellidos (en caso de personas)
+  ethnic_group: integer, grupo étnico (FK a gnuhealth_ethnicity.id)
+  du: integer, documento único (FK a gnuhealth_du.id)
+  unidentified: boolean, indica si la persona es no identificada
+  dob: date, fecha de nacimiento
+  is_institution: boolean, si es una institución
+  marital_status: varchar, estado civil
+  gender: varchar, género (masculino, femenino, otro)
+  is_pharmacy: boolean, si representa a una farmacia
+  residence: integer, país o lugar de residencia (FK a country_country.id)
+  is_person: boolean, indica si es una persona física
+  education: varchar, nivel educativo
+  occupation: integer, ocupación (FK a gnuhealth_occupation.id)
+  warehouse: integer, almacén asociado (FK a stock_location.id)
+  death_certificate: integer, certificado de defunción (FK a gnuhealth_death_certificate.id)
+  birth_certificate: integer, certificado de nacimiento (FK a gnuhealth_birth_certificate.id)
+  deceased: boolean, si está fallecido
+  name_representation: varchar, nombre en forma alternativa
+  replaced_by: integer, ID de reemplazo (FK a party_party.id)
+  federation_account: varchar, identificador de federación (para interoperabilidad)
+  fed_country: varchar, país de federación
+  fsync: boolean, usado para sincronización federada
+  est_dob: boolean, fecha de nacimiento estimada
+  est_years: integer, edad estimada en años
+  create_target: boolean, indica si debe crearse como objetivo (útil para integración)
+
+llaves_foráneas:
+  internal_user       → res_user(id)
+  citizenship         → country_country(id)
+  ethnic_group        → gnuhealth_ethnicity(id)
+  du                  → gnuhealth_du(id)
+  residence           → country_country(id)
+  occupation          → gnuhealth_occupation(id)
+  warehouse           → stock_location(id)
+  death_certificate   → gnuhealth_death_certificate(id)
+  birth_certificate   → gnuhealth_birth_certificate(id)
+  replaced_by         → party_party(id)
+
+índices:
+  - clave primaria: id
+  - únicos: federation_account, internal_user, ref, code
+  - índices: code, code_length, insurance_company_type, name

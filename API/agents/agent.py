@@ -3,6 +3,7 @@ from sqlalchemy import create_engine, text
 import pandas as pd
 import re
 import os
+import redis_db.redis_kb_module as kb
 #from generators.natural_ollama_model import TextGenerator
 from generators.natural_ollama_model_v2 import TextGenerator
 from premsql.executors import ExecutorUsingLangChain
@@ -124,7 +125,9 @@ class Agent:
 
     def query_model(self, messages: list, question: str, system_prompt: Optional[str] = None) -> dict:
         schema_context = self.get_schema_summary(question)
-        extra_context = self.load_context()
+        extra_context = kb.build_few_shot_prompt(question) + "\n\n" + schema_context
+        print("📜 Contexto del esquema:", schema_context)
+        print("📜 Contexto extra:", extra_context)
 
         for attempt in range(4):
             print(f"🧠 Intento {attempt + 1}: Enviando prompt al modelo.")

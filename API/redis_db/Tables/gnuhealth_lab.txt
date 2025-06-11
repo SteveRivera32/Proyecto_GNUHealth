@@ -1,0 +1,45 @@
+tabla: gnuhealth_lab
+descripción: Registra las solicitudes, análisis y resultados de laboratorio de los pacientes, incluyendo datos de trazabilidad (médico solicitante, patólogo, validadores), estado del proceso y metadatos de firma digital.
+
+columnas:
+  id: integer, clave primaria autoincremental
+  create_date: timestamp, fecha de creación del registro
+  write_date: timestamp, fecha de última modificación
+  create_uid: integer, ID del usuario que creó el registro
+  write_uid: integer, ID del usuario que modificó por última vez
+  date_requested: timestamp, fecha en que se solicitó la prueba
+  name: varchar, identificador interno/folio de la prueba (único)
+  requestor: integer, médico solicitante (FK a gnuhealth_healthprofessional.id)
+  date_analysis: timestamp, fecha en que se realizó el análisis
+  results: text, resultados detallados
+  pathologist: integer, patólogo responsable (FK a gnuhealth_healthprofessional.id)
+  diagnosis: text, diagnóstico basado en los resultados
+  test: integer, tipo de prueba (FK a gnuhealth_lab_test_type.id)
+  patient: integer, paciente al que pertenece la muestra (FK a gnuhealth_patient.id)
+  request_order: integer, número de orden de la solicitud
+  digital_signature: text, firma digital del documento
+  document_digest: varchar, hash/digest del documento para integridad
+  done_by: integer, profesional que realizó la prueba (FK a gnuhealth_healthprofessional.id)
+  done_date: timestamp, fecha y hora de finalización
+  serializer: text, representación serializada del documento/JSON
+  state: varchar, estado del proceso (borrador, validado, cancelado, etc.)
+  validated_by: integer, profesional que validó los resultados (FK a gnuhealth_healthprofessional.id)
+  validation_date: timestamp, fecha de validación
+  pathology: integer, patología asociada (FK a gnuhealth_pathology.id)
+  historize: boolean, indica si se debe historizar (mantener versiones)
+  other_source: varchar, fuente externa de la muestra
+  source_type: varchar, tipo de fuente (hospital, clínica externa, etc.)
+
+llaves_foráneas:
+  requestor    → gnuhealth_healthprofessional(id)
+  pathologist  → gnuhealth_healthprofessional(id)
+  test         → gnuhealth_lab_test_type(id)
+  patient      → gnuhealth_patient(id)
+  done_by      → gnuhealth_healthprofessional(id)
+  validated_by → gnuhealth_healthprofessional(id)
+  pathology    → gnuhealth_pathology(id)
+
+índices:
+  - clave primaria: id
+  - índice único: name
+  - índices: date_requested, pathologist, patient, requestor, source_type, test, date_analysis
