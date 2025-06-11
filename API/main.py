@@ -38,6 +38,12 @@ available_models_cache = []
 last_cache_update = 0
 CACHE_TTL = 300  # 5 minutos en segundos
 
+# Mensaje amigable para errores
+USER_FRIENDLY_ERROR_MSG = (
+    "Lo siento, no he podido entender tu consulta en este momento. "
+    "Por favor intenta formularla de otra manera o consulta con un administrador si el problema persiste."
+)
+
 async def fetch_ollama_models() -> List[Dict]:
     """Obtiene la lista de modelos disponibles desde Ollama"""
     try:
@@ -196,9 +202,11 @@ async def generate_ollama_style(request: Request):
     if tipo in ["natural", "sql_result"]:
         answer = response.get("content") or response.get("response") or ""
     elif tipo == "error":
-        answer = response.get("error", "Error inesperado.")
+        print("Error recibido del LLM:", response.get("error", "Error inesperado."))
+        answer = USER_FRIENDLY_ERROR_MSG
     else:
-        answer = "No se pudo procesar la respuesta."
+        print("Tipo de respuesta desconocido:", tipo)
+        answer = USER_FRIENDLY_ERROR_MSG
 
     return JSONResponse(content={
         "model": model_id,
@@ -272,16 +280,19 @@ async def chat_completions(request: ChatCompletionRequest, authorization: str = 
     if tipo in ["natural", "sql_result"]:
         answer = response.get("content") or response.get("response") or ""
     elif tipo == "error":
-        answer = response.get("error", "Error inesperado.")
+        print("Error recibido del LLM:", response.get("error", "Error inesperado."))
+        answer = USER_FRIENDLY_ERROR_MSG
     elif tipo == "error_handled":
         if "content" in response:
             answer = response["content"]
         elif "sql" in response:
             answer = f"Se corrigió la consulta: {response['sql']}"
         else:
-            answer = "Se intentó corregir el error pero no se obtuvo una respuesta válida."
+            print("Error no corregido completamente.")
+            answer = USER_FRIENDLY_ERROR_MSG
     else:
-        answer = "No se pudo procesar la respuesta."
+        print("Tipo de respuesta desconocido:", tipo)
+        answer = USER_FRIENDLY_ERROR_MSG
 
     # Tiempos realistas basados en el procesamiento real
     total_duration = time.time() - start_time
