@@ -125,12 +125,12 @@ class Agent:
 
     def query_model(self, messages: list, question: str, system_prompt: Optional[str] = None) -> dict:
         schema_context = self.get_schema_summary(question)
-        extra_context = kb.build_few_shot_prompt(question) + "\n\n" + schema_context
-        print("📜 Contexto del esquema:", schema_context)
-        print("📜 Contexto extra:", extra_context)
+        extra_context = kb.build_few_shot_prompt(question) + "\n\n"
+        #print("📜 Contexto del esquema:", schema_context)
+        #print("📜 Contexto extra:", extra_context)
 
         for attempt in range(4):
-            print(f"🧠 Intento {attempt + 1}: Enviando prompt al modelo.")
+            #print(f"🧠 Intento {attempt + 1}: Enviando prompt al modelo.")
 
             # Copiar el historial completo en cada intento
             attempt_messages = messages.copy()
@@ -141,24 +141,24 @@ class Agent:
 
             # Si es un reintento y hubo JSON inválido, agregas aviso al user message
             if attempt == 0:
-                user_content = f"{question}\n\nExtra Context:\n{extra_context}\n"
+                user_content = f"Users question:{question}\n\nExtra Context:\n{extra_context}\n"
             else:
                 user_content = (
-                    "⚠️ Tu respuesta anterior no era JSON válido. "
+                     "⚠️ Tu respuesta anterior no era JSON válido. "
                     "Asegúrate de responder solo con un objeto JSON correcto según las instrucciones.\n\n"
-                    f"{question}\n\nExtra Context:\n{extra_context}\n"
+                    f"Users Question {question} \n{extra_context}\n"
                 )
 
             # DEBUG → mostrar el array de mensajes que se envía
-            print(f"📥 Enviando mensajes al modelo:")
-            for m in attempt_messages:
-                print(f"- {m['role']}: {m['content'][:100]}...")  # solo primeros 100 chars para no saturar
-            print("\n")
+            #print(f"📥 Enviando mensajes al modelo:")
+            #for m in attempt_messages:
+            #    print(f"- {m['role']}: {m['content'][:100]}...")  # solo primeros 100 chars para no saturar
+            #print("\n")
 
             # Enviar al modelo
             raw = self.model.generate(attempt_messages)
             raw = self.remove_markdown(raw)
-            print(f"📩 Respuesta RAW: {raw}")
+            #print(f"📩 Respuesta RAW: {raw}")
 
             try:
                 return json.loads(raw)
@@ -217,7 +217,7 @@ class Agent:
 
         # Llamar a query_model con el historial completo
         response = self.query_model(messages, question, system_prompt)
-        print("📥 Respuesta del modelo:", response)
+        #print("📥 Respuesta del modelo:", response)
 
         # Analizar la respuesta como antes
         if "parse_error" in response:

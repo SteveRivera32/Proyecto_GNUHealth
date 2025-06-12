@@ -17,11 +17,13 @@ class TextGenerator:
         Returns:
             str: Respuesta generada por el modelo.
         """
+        print("Enviando mensajes a Ollama:", messages)
         response = self.client.chat(
             model=self.model_name,
             messages=messages,
             stream=False,
         )
+        print("Respuesta de Ollama:", response)
         return response["message"]["content"]
 
     def generate_stream(self, messages: List[dict]):

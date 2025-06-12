@@ -154,7 +154,7 @@ def query_tables(input_text):
     return context
 
 def build_few_shot_prompt(text_input):
-    few_shots = load_few_shots()
+    #few_shots = load_few_shots()
     context=query_tables(text_input)
     
     prompt = f"""
@@ -168,9 +168,7 @@ def build_few_shot_prompt(text_input):
 
     database context:
     {context}
-    
 
-    {few_shots}
 
     """
     return prompt
