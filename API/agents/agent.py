@@ -141,12 +141,12 @@ class Agent:
 
             # Si es un reintento y hubo JSON inválido, agregas aviso al user message
             if attempt == 0:
-                user_content = f"Users question:{question}\n\nExtra Context:\n{extra_context}\n"
+                user_content = f"UserQuestion:{question}\n\nExtra Context:\n{extra_context}\n"
             else:
                 user_content = (
                      "⚠️ Tu respuesta anterior no era JSON válido. "
                     "Asegúrate de responder solo con un objeto JSON correcto según las instrucciones.\n\n"
-                    f"Users Question {question} \n{extra_context}\n"
+                    f"UserQuestion: {question} \n{extra_context}\n"
                 )
 
             # DEBUG → mostrar el array de mensajes que se envía
