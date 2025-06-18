@@ -19,7 +19,9 @@ tambien deberas activar elentorno con `conda activate` y usar `pip` para instala
    pip install "fastapi[standard]"
    pip install "uvicorn[standard]"
    pip install tabulate
-   pip install OpenAi
+   pip install openai
+   pip install pg8000
+   pip install psycopg2-binary
 
 
 ```
@@ -43,7 +45,10 @@ pip install -U premsql
 pip install "fastapi[standard]"
 pip install "uvicorn[standard]"
 pip install tabulate
-pip install OpenAi
+pip install openai
+pip install pg8000
+pip install psycopg2-binary
+
 ```
 
 
@@ -66,6 +71,7 @@ ir al archivo `.venv` en la carpeta del proyecto.
 OPENWEB_UI_URL=http://localhost:3000
 MODEL_NAME=tinyllama
 OLLAMA_URL=http://localhost:11434
+OLLABA_BASE_URL=http://localhost:11434
 OPENAI_API_KEY=<API_KEY>
 
 
@@ -98,6 +104,9 @@ los containers de OpenWeb UI y Ollama.
 ```
 docker-compose up -d 
 ```
+
+
+
 
 
 

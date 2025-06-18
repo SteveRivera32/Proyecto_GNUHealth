@@ -6,7 +6,7 @@ import re
 import os
 import redis_db.redis_kb_module as kb
 #from generators.natural_ollama_model import TextGenerator
-from generators.natural_ollama_model_v2 import TextGenerator
+from generators.natural_ollama_model import TextGenerator
 from tabulate import tabulate
 from typing import Optional
 from langchain.utilities import SQLDatabase
@@ -29,9 +29,6 @@ class Agent:
         prompt_path = os.path.join(base_path, "..", "context.txt")
         with open(prompt_path, "r", encoding="utf-8") as f:
             return f.read()
-
-
-
 
     def remove_markdown(self,text: str) -> str:
         # Remove code block markdown with optional language label (like ```json)
@@ -61,7 +58,7 @@ class Agent:
                 user_content = f"UserQuestion:{question}\n\nExtra Context:\n{extra_context}\n"
             else:
                 user_content = (
-                     "⚠️ Tu respuesta anterior no era JSON válido. "
+                     "Tu respuesta anterior no era JSON válido. "
                     "Asegúrate de responder solo con un objeto JSON correcto según las instrucciones.\n\n"
                     f"UserQuestion: {question} \n{extra_context}\n"
                 )
@@ -92,11 +89,8 @@ class Agent:
             with db._engine.connect() as conn:
                     df = pd.read_sql(
                     sql,
-                     conn  # ✅ usar `conn`, no `engine` directamente
+                     conn 
                     )
-
-
-
 
             # Convertir columnas de tipo Timestamp a string
             for col in df.select_dtypes(include=['datetime64[ns]', 'datetime64[ns, UTC]']):
