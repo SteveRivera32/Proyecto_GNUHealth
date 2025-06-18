@@ -22,7 +22,10 @@ tambien deberas activar elentorno con `conda activate` y usar `pip` para instala
    pip install openai
    pip install pg8000
    pip install psycopg2-binary
-
+   pip install redis
+   pip install langchain_ollama
+   pip install redisvl
+   pip install langchain_redis
 
 ```
 # Opcion 2 Instalacion via python venv
