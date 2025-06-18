@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 import re
 import os
 import redis_db.redis_kb_module as kb
-#from generators.natural_ollama_model import TextGenerator
 from generators.natural_ollama_model import TextGenerator
 from tabulate import tabulate
 from typing import Optional
