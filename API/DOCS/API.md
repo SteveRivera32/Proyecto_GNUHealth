@@ -158,3 +158,39 @@ La API implementa los siguientes códigos de error:
 - `400`: Solicitud incorrecta
 - `500`: Error interno del servidor
 
+# Estructura del Proyecto GNU Health
+
+📦 Proyecto_GNUHealth
+├── 📂 API/
+│   ├── 📂 agents/
+│   ├── 📂 DOCS/
+│   ├── 📂 executors/
+│   ├── 📂 generators/
+│   ├── 📂 models/
+│   ├── 📂 module/
+│   ├── 📂 premsql/
+│   ├── 📂 redis_db/
+│   ├── 📄 README.MD
+│   ├── 📄 california_schools.sqlite
+│   ├── 📄 context.txt
+│   ├── 📄 evaluator.py
+│   ├── 📄 main.py
+│   ├── 📄 prompt.txt
+│   ├── 📄 requirements.txt
+│   └── 📄 server.py
+│
+├── 📂 Notebooks/
+│   ├── 📂 premsql/
+│   ├── 📄 gnu_test_db_struc.md
+│   ├── 📄 logs.txt
+│   ├── 📄 promting.ipynb
+│   └── 📄 text2sql_google_model.py
+│
+├── 📄 README.md
+├── 📄 Dockerfile
+├── 📄 docker-compose.yml
+├── 📄 california_schools.sqlite
+├── 📄 gnuhealth-44-demo.sql.gz
+├── 📄 install_demo_database.sh
+└── 📄 .gitignore
+

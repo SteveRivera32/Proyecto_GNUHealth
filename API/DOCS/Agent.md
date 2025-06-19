@@ -8,14 +8,14 @@ La clase `Agent` es un componente central que actúa como intermediario entre un
 ## Componentes principales
 
 - **TextGenerator**: Módulo encargado de interactuar con el modelo de lenguaje (LLM). Recibe prompts y devuelve respuestas generadas.
-- **Langchain SQLDatabase**: Permite la conexión y ejecución de consultas SQL sobre la base de datos relacional (en este caso, PostgreSQL).
+- **Langchain SQLDatabaseToolkit**: Permite la conexión y ejecución de consultas SQL sobre la base de datos relacional (en este caso, PostgreSQL).
 - **redis_db.redis_kb_module**: Módulo que interactúa con una base de datos vectorial en Redis, utilizada para enriquecer el contexto que se le entrega al modelo de lenguaje.
 
 ---
 
 ## Flujo de funcionamiento
 
-### 1. Enriquecimiento del contexto con datos vectoriales
+### 1. (RAG) Mediante base de datos vectoirial y busqueda semantica.
 
 Antes de enviar la pregunta al modelo, el agente utiliza el módulo `redis_db.redis_kb_module` para obtener contexto adicional relevante a la pregunta. Esto se realiza con la línea:
 
@@ -32,7 +32,7 @@ extra_context = kb.build_few_shot_prompt(question) + "\n\n"
 
 La función principal para interactuar con el modelo es `query_model`. El flujo es el siguiente:
 
-- Se construye un historial de mensajes (chat history) que incluye la pregunta del usuario y el contexto enriquecido.
+- Se construye un historial de mensajes (chat history) que incluye la pregunta del usuario y el contexto.
 - Se envía este historial al modelo de lenguaje usando el método `generate` de `TextGenerator`.
 - Se espera que el modelo devuelva una respuesta en formato JSON.
 - Si la respuesta no es un JSON válido, se reintenta hasta 4 veces, indicando al modelo que corrija el formato.
@@ -48,7 +48,7 @@ def execute_sql(self, sql: str):
 ```
 
 - **¿Qué hace?**
-  - Se conecta a la base de datos PostgreSQL usando `Langchain SQLDatabase`.
+  - Se conecta a la base de datos PostgreSQL usando `SQLDatabase Toolkit` de Langchain.
   - Ejecuta la consulta SQL recibida.
   - Convierte el resultado en un DataFrame de pandas.
   - Realiza conversiones necesarias para que los datos sean serializables (por ejemplo, fechas a string).
@@ -71,7 +71,7 @@ def execute_sql(self, sql: str):
 ## Ejemplo de uso
 
 1. **Pregunta:** "¿Cuántos pacientes hay en la base de datos?"
-2. **Contexto enriquecido:** Se añaden fragmentos relevantes desde Redis.
+2. **Contexto:** Se añaden fragmentos relevantes desde Redis.
 3. **Respuesta del modelo:**  
    ```json
    {
