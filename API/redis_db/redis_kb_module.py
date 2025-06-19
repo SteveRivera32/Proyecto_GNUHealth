@@ -2,7 +2,6 @@ from langchain_ollama import OllamaEmbeddings
 import os
 import redis
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from redis_db.redis_query_module import retriever
 from langchain_redis import RedisConfig, RedisVectorStore
 import re
 from glob import glob
@@ -65,7 +64,7 @@ def create_vector_store():
 
     embeddings = OllamaEmbeddings(
         model="mxbai-embed-large",
-        base_url=os.getenv("OLLAMA_URL", "http://localhost:11434")
+        base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
     )
     config = RedisConfig(
         index_name="gnuhealth",
