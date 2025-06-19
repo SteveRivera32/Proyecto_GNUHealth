@@ -53,8 +53,9 @@ OPENAI_API_KEY=<OpenAIAPiKey>
 
    Esto creará una carpeta con el nombre del proyecto.
 2. **Configurar API**
-
-   Primero instalar python venv y configurarlo:
+   
+   Es necesario seleccionar la version 3.11 de python y recomendamos
+   configuarar pyenv en caso de no contar con python 3.11 o instalar anaconda
 
    ```bash
    curl https://pyenv.run/ | bash
@@ -102,7 +103,7 @@ OPENAI_API_KEY=<OpenAIAPiKey>
    deactivate
    
    ```
-3. **Levantar API**
+4. **Levantar API**
 
    Para correrla se usa (dentro del entorno venv):
 
@@ -113,10 +114,11 @@ OPENAI_API_KEY=<OpenAIAPiKey>
    En el caso que el puerto 8000 ya esté siendo usado, se puede usar el 8001.
 
    **NOTA:** Para detenerla se usa "CTRL + C" en la terminal donde este corriendo.
-4. **Configurar base de datos**
+5. **Configurar base de datos**
 
-   En otra terminal, en el directorio del proyecto:
-
+   La API require concectarse a la base de datos de Postgre, en el proyecto incluimos un arhvio `gnuhealth-44-demo.sql.gz`
+   que contiene la base de datos, en la siguiente sección vamos a cargar este archivo en un docker container.
+   
    ```bash
    docker build -t proyecto_gnuhealth-db .
    ```
@@ -126,7 +128,7 @@ OPENAI_API_KEY=<OpenAIAPiKey>
    ```bash
    docker-compose up -d 
    ```
-
+   
    > Esto levantará OpenWebUI en el puerto 3000.
 
    Poner el arhivo gz en el directorio del proyecto:
@@ -160,7 +162,7 @@ OPENAI_API_KEY=<OpenAIAPiKey>
    docker-compose down
    
    ```
-5. **Correr Ollama localmente**
+7. **Correr Ollama localmente**
 
    En una nueva terminal, correr:
 
@@ -175,7 +177,7 @@ OPENAI_API_KEY=<OpenAIAPiKey>
    ```
 
    > Este modelo pesa aproximadamente 3gb
-6. **Conectar API con OpenWebUI**
+8. **Conectar API con OpenWebUI**
 
    Abrir OpenWebUI en el navegador: [http://localhost:3000](http://localhost:3000)
 
@@ -190,7 +192,7 @@ OPENAI_API_KEY=<OpenAIAPiKey>
    ![Image](https://github.com/user-attachments/assets/f5b8e614-362e-4a56-96ba-8b1778be4d44)
 
    Para saber si funciona la conexión con la API, revisar si ya aparecen modelos.
-7. **Configuraciones necesarias en OpenWebUI**
+9. **Configuraciones necesarias en OpenWebUI**
 
    Arriba a la derecha en su usuario, van a ajustes y deben cambiar la sección de Interfaz (solo la parte de "chat"):
 
@@ -199,7 +201,7 @@ OPENAI_API_KEY=<OpenAIAPiKey>
    Luego en el "panel de administración", en configuración, también en Interfaz deben cambiar algunas cosas y dejarlo así:
 
    ![Image](https://github.com/user-attachments/assets/1bc64c63-54ff-4f39-be12-afd22d8aba4c)
-8. **Agregar el prompt**
+10. **Agregar el system  prompt**
 
    Ahora deben crear un modelo en la sección de "espacio de trabajo" arriba a la izquierda. El modelo debe estar basado en un modelo disponible de Ollama. Agregan el siguiente prompt:
 
@@ -315,6 +317,6 @@ OPENAI_API_KEY=<OpenAIAPiKey>
    ![Image](https://github.com/user-attachments/assets/d1239ea7-0bf3-4780-8993-19107cca9ae6)
 
    Recordar darle "guardar" abajo.
-9. **Probar el proyecto**
+11. **Probar el proyecto**
 
    Para probar si funciona, deben seleccionar el modelo que acaban de crear y mandar un mensaje.
