@@ -90,6 +90,10 @@ OPENAI_API_KEY=<OpenAIAPiKey>
    pip install pg8000
    pip install psycopg2-binary
    pip install sqlalchemy
+   pip install redis
+   pip install langchain_ollama
+   pip install redisvl
+   pip install langchain_redis
    ```
 
    **NOTA:** Para desactivar el entorno venv:
