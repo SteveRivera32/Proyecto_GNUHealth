@@ -1,0 +1,27 @@
+tabla: gnuhealth_healthprofessional
+descripción: Contiene el registro de los profesionales de la salud activos en la institución, incluyendo su número de licencia, institución a la que pertenecen y especialidad principal. Estos profesionales pueden ser responsables de solicitudes, diagnósticos y validaciones dentro del sistema clínico.
+
+columnas:
+  id: integer, clave primaria autoincremental
+  create_date: timestamp, fecha de creación del registro
+  write_date: timestamp, fecha de última modificación
+  create_uid: integer, ID del usuario que creó el registro (FK a res_user.id)
+  write_uid: integer, ID del usuario que modificó por última vez el registro (FK a res_user.id)
+  info: text, información adicional sobre el profesional (observaciones, títulos, etc.)
+  code: varchar, código o número de licencia profesional
+  name: integer, persona asociada al profesional (FK a party_party.id)
+  institution: integer, institución o establecimiento de salud donde labora (FK a party_party.id)
+  main_specialty: integer, especialidad médica principal del profesional (FK a gnuhealth_hp_specialty.id)
+  active: boolean, indica si el profesional está activo en el sistema
+
+llaves_foráneas:
+  create_uid     → res_user(id)
+  write_uid      → res_user(id)
+  name           → party_party(id)
+  institution    → party_party(id)
+  main_specialty → gnuhealth_hp_specialty(id)
+
+índices:
+  - clave primaria: id
+  - índices únicos: code, name
+  - índices: active

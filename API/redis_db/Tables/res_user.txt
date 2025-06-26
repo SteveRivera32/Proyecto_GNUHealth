@@ -1,0 +1,39 @@
+tabla: res_user
+descripción: Contiene la información básica de los usuarios del sistema, incluyendo credenciales de acceso, preferencias de idioma y zona horaria, vínculos con empleados y configuraciones específicas del sistema.
+
+columnas:
+  id: integer, clave primaria autoincremental
+  name: varchar, nombre completo del usuario
+  active: boolean, indica si el usuario está activo en el sistema
+  login: varchar, nombre de usuario utilizado para iniciar sesión (único)
+  create_date: timestamp, fecha de creación del registro
+  write_date: timestamp, fecha de última modificación
+  create_uid: integer, ID del usuario que creó este registro (FK a res_user.id)
+  write_uid: integer, ID del usuario que modificó por última vez este registro (FK a res_user.id)
+  timezone: varchar, zona horaria preferida del usuario
+  menu: integer, acción o menú de inicio preconfigurado (FK a ir_action.id)
+  email: varchar, correo electrónico del usuario
+  language: integer, idioma preferido del usuario (FK a ir_lang.id)
+  signature: text, firma digital o bloque de firma utilizado en comunicaciones
+  employee: integer, empleado asociado al usuario (FK a company_employee.id)
+  company: integer, empresa actual del usuario (FK a company_company.id)
+  calendar: integer, calendario vinculado (FK a calendar_calendar.id)
+  use_caldav: boolean, indica si el usuario utiliza sincronización CalDAV
+  password_hash: varchar, hash de la contraseña del usuario (usado para autenticación segura)
+  password_reset: varchar, token temporal generado para el restablecimiento de contraseña
+  password_reset_expire: timestamp, fecha y hora de expiración del token de restablecimiento
+  company_filter: varchar, filtro de empresas aplicable cuando el usuario tiene acceso a múltiples compañías
+  warehouse: integer, almacén principal asociado al usuario (FK a stock_location.id)
+
+llaves_foráneas:
+  menu      → ir_action(id)
+  language  → ir_lang(id)
+  employee  → company_employee(id)
+  company   → company_company(id)
+  calendar  → calendar_calendar(id)
+  warehouse → stock_location(id)
+
+índices:
+  - clave primaria: id
+  - índices únicos: login
+  - índices: name

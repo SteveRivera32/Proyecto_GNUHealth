@@ -1,0 +1,21 @@
+tabla: gnuhealth_person_alternative_identification
+descripción: Almacena información sobre identificaciones alternativas utilizadas por las personas dentro de la institución de salud, tales como carnets de aseguradoras, identificaciones comunitarias u otros documentos distintos al documento nacional principal.
+
+columnas:
+  id: integer, clave primaria autoincremental
+  create_date: timestamp, fecha de creación del registro
+  write_date: timestamp, fecha de última modificación
+  create_uid: integer, ID del usuario que creó el registro (FK a res_user.id)
+  write_uid: integer, ID del usuario que modificó por última vez el registro (FK a res_user.id)
+  code: varchar, código o número de identificación alternativo
+  name: integer, persona a la que pertenece la identificación (FK a party_party.id)
+  comments: varchar, comentarios adicionales sobre la identificación
+  alternative_id_type: varchar, tipo de identificación alternativa (ej. carné de aseguradora, ID indígena, etc.)
+  expiration_date: date, fecha de vencimiento de la identificación alternativa
+  other_alternative_id_type: varchar, campo para especificar otro tipo de identificación no listado en los valores predefinidos
+
+llaves_foráneas:
+  name → party_party(id)
+
+índices:
+  - clave primaria: id

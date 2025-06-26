@@ -82,26 +82,37 @@ class Agent:
 
     def execute_sql(self, sql: str):
         try:
+            sql_lower = sql.lower()
+            forbidden_statements = {
+                "delete": "❌ No está permitido ejecutar sentencias DELETE.",
+                "update": "❌ No está permitido ejecutar sentencias UPDATE.",
+                "insert": "❌ No está permitido ejecutar sentencias INSERT.",
+                "drop": "❌ No está permitido ejecutar sentencias DROP.",
+                "alter": "❌ No está permitido ejecutar sentencias ALTER.",
+                "truncate": "❌ No está permitido ejecutar sentencias TRUNCATE.",
+                "create": "❌ No está permitido ejecutar sentencias CREATE.",
+            }
+
+            for statement, message in forbidden_statements.items():
+                if re.search(rf"\b{statement}\b", sql_lower):
+                    return {"error": message}
+
             db = SQLDatabase.from_uri(self.db_uri)
 
-
             with db._engine.connect() as conn:
-                    df = pd.read_sql(
-                    sql,
-                     conn 
-                    )
+                df = pd.read_sql(sql, conn)
 
-            # Convertir columnas de tipo Timestamp a string
+            # Convertir timestamps a string
             for col in df.select_dtypes(include=['datetime64[ns]', 'datetime64[ns, UTC]']):
                 df[col] = df[col].astype(str)
 
-            # También pandas.Timestamp puede estar como object → convertir todo a string si es Timestamp
             for col in df.columns:
                 df[col] = df[col].apply(lambda x: str(x) if isinstance(x, pd.Timestamp) else x)
 
             data = df.to_dict(orient="records")
 
             return {"result": data}
+        
         except Exception as e:
             print("❌ Error al ejecutar SQL:", e)
             return {"error": str(e)}
@@ -161,6 +172,11 @@ class Agent:
                 print(f"🧪 Intento {attempt + 1}: Resultado de ejecución SQL:", execution_result)
 
                 if "error" in execution_result:
+                    # Si es un mensaje personalizado por sentencia prohibida, lo tratamos como natural
+                    if any(keyword in execution_result["error"].lower() for keyword in ["no está permitido", "no se permite"]):
+                        self.chat_history.append({"role": "assistant", "content": execution_result["error"]})
+                        return {"content": execution_result["error"]}, "natural"
+
                     print("🔁 Reintentando debido a error SQL...")
                     error_json = {"error": execution_result["error"]}
                     retry_messages = self.chat_history.copy()

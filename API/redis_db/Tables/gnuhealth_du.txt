@@ -1,0 +1,50 @@
+tabla: gnuhealth_du
+descripción: Esta tabla contiene información detallada sobre las unidades de vivienda registradas, incluyendo características físicas de la propiedad, ubicación geográfica, servicios básicos disponibles y otros datos sociodemográficos relevantes.
+
+columnas:
+  id: integer, clave primaria autoincremental
+  create_date: timestamp, fecha de creación del registro
+  write_date: timestamp, fecha de última modificación
+  create_uid: integer, ID del usuario que creó el registro (FK a res_user.id)
+  write_uid: integer, ID del usuario que modificó por última vez el registro (FK a res_user.id)
+  bathrooms: integer, número de baños en la vivienda
+  roof_type: varchar, tipo de techo (ej. teja, lámina, concreto)
+  urladdr: varchar, enlace al mapa u otro recurso geográfico (ej. OpenStreetMap)
+  sewers: boolean, indica si la vivienda tiene acceso a red de alcantarillado
+  dwelling: varchar, tipo de vivienda (ej. casa, apartamento)
+  address_street_number: varchar, número del inmueble en la calle 
+  address_country: integer, país (FK a gcountry_country.id)
+  address_street: varchar, nombre de la calle
+  electricity: boolean, indica si cuenta con suministro eléctrico
+  address_subdivision: integer, subdivisión administrativa (FK a country_subdivision.id)
+  housing: varchar, condiciones o estado de la vivienda
+  address_district: varchar, distrito al que pertenece
+  materials: varchar, materiales predominantes de construcción
+  internet: boolean, indica si cuenta con acceso a internet
+  latitude: numeric, coordenada de latitud de la vivienda
+  address_zip: varchar, código postal
+  picture: bytea, imagen o fotografía asociada a la vivienda
+  address_street_bis: varchar, información adicional del domicilio (bis, etc.)
+  bedrooms: integer, cantidad de dormitorios
+  gas: boolean, indica si tiene acceso a suministro de gas
+  television: boolean, indica si cuenta con televisión
+  telephone: boolean, indica si tiene línea telefónica
+  water: boolean, acceso a agua potable o red pública
+  total_surface: integer, superficie total de la vivienda (en metros cuadrados)
+  desc: varchar, descripción general de la vivienda
+  address_city: varchar, ciudad donde se ubica la vivienda
+  operational_sector: integer, sector operativo asignado (FK a gnuhealth_operational_sector.id)
+  name: varchar, identificador único o código de la vivienda
+  trash: boolean, indica si cuenta con servicio de recolección de basura
+  longitude: numeric, coordenada de longitud
+  address_municipality: varchar, municipio correspondiente
+  altitude: integer, altitud sobre el nivel del mar
+
+llaves_foráneas:
+  address_country     → gcountry_country(id)
+  address_subdivision → country_subdivision(id)
+  operational_sector  → gnuhealth_operational_sector(id)
+
+índices:
+  - clave primaria: id
+  - índices únicos: name
