@@ -37,30 +37,15 @@ class Agent:
         return clean_text.strip()
 
     def query_model(self, messages: list, question: str, system_prompt: Optional[str] = None) -> dict:
-        #schema_context = self.get_schema_summary(question)
-        extra_context = kb.build_few_shot_prompt(question) + "\n\n"
-        #print("📜 Contexto del esquema:", schema_context)
-        #print("📜 Contexto extra:", extra_context)
+
+        messages.append( {"role": "user", "content": question})
 
         for attempt in range(4):
-            #print(f"🧠 Intento {attempt + 1}: Enviando prompt al modelo.")
+            """Este ciclo for fuerza al modelo a generar un json  no tiene nada que ver con SQL
+                Seria recomendable cambiar le nombre de esta funcion 
+            """
 
-            # Copiar el historial completo en cada intento
-            attempt_messages = messages.copy()
-
-            # Solo el primer intento debe incluir el system prompt original
-            if attempt == 0 and system_prompt and not any(m["role"] == "system" for m in attempt_messages):
-                attempt_messages.insert(0, {"role": "system", "content": system_prompt})
-
-            # Si es un reintento y hubo JSON inválido, agregas aviso al user message
-            if attempt == 0:
-                user_content = f"UserQuestion:{question}\n\nExtra Context:\n{extra_context}\n"
-            else:
-                user_content = (
-                     "Tu respuesta anterior no era JSON válido. "
-                    "Asegúrate de responder solo con un objeto JSON correcto según las instrucciones.\n\n"
-                    f"UserQuestion: {question} \n{extra_context}\n"
-                )
+           
 
             # DEBUG → mostrar el array de mensajes que se envía
             #print(f"📥 Enviando mensajes al modelo:")
@@ -69,13 +54,18 @@ class Agent:
             #print("\n")
 
             # Enviar al modelo
-            raw = self.model.generate(attempt_messages)
+            raw = self.model.generate(messages)
             raw = self.remove_markdown(raw)
             #print(f"📩 Respuesta RAW: {raw}")
 
             try:
                 return json.loads(raw)
             except Exception as e:
+                user_content = (
+                     "Tu respuesta anterior no era JSON válido. "
+                    "Asegúrate de responder solo con un objeto JSON correcto según las instrucciones.\n\n"
+                    f"\n {raw}")
+                messages.append( {"role": "user", "content": user_content})
                 print(f"❌ Error al parsear JSON (intento {attempt + 1}):", str(e))
 
         return {"parse_error": "No se pudo obtener una respuesta JSON válida después de varios intentos."}
@@ -146,7 +136,9 @@ class Agent:
         messages = self.chat_history.copy()
 
         # Llamar a query_model con el historial completo
-        response = self.query_model(messages, question, system_prompt)
+
+        extra_context = kb.build_few_shot_prompt(question) + "\n"+f"UserQuestion:{question}"
+        response = self.query_model(messages, extra_context, system_prompt)
         #print("📥 Respuesta del modelo:", response)
 
         # Analizar la respuesta como antes

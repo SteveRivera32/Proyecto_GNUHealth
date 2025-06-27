@@ -17,6 +17,12 @@ class TextGenerator:
         Returns:
             str: Respuesta generada por el modelo.
         """
+        log=""
+        for ms in messages:
+            log+="\n"+str(ms)
+        with open("./log.txt","a") as file:
+            file.write(log)
+
         print("Enviando mensajes a Ollama:", messages)
         response = self.client.chat(
             model=self.model_name,
@@ -24,6 +30,9 @@ class TextGenerator:
             stream=False,
         )
         print("Respuesta de Ollama:", response)
+
+        with open("./log.txt","a") as file:
+            file.write("\n"+str(response["message"]))
         return response["message"]["content"]
 
     def generate_stream(self, messages: List[dict]):

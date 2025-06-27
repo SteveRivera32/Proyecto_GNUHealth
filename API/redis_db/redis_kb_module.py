@@ -2,14 +2,13 @@ from langchain_ollama import OllamaEmbeddings
 import os
 import redis
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from redis_query_module import retriever
+from redis_db.redis_query_module import retriever
 from langchain_redis import RedisConfig, RedisVectorStore
 import re
 from glob import glob
 
 # URL de conexión a Redis. Por defecto se conecta a localhost:6379
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
-
 def test_redis():
     """
     Verifica la conexión a Redis.
@@ -68,7 +67,7 @@ def query_tables(input_text):
         str: Contexto construido con la información relevante de las tablas
     """
     vector_store = create_vector_store()
-    retriever = vector_store.as_retriever(search_type="similarity", search_kwargs={"k": 3})
+    retriever = vector_store.as_retriever(search_type="similarity", search_kwargs={"k": 4})
     
     # Recuperar documentos relevantes
     retrieved_docs = retriever.invoke(input_text)
@@ -92,7 +91,7 @@ def build_few_shot_prompt(text_input):
     Returns:
         str: Prompt construido con el contexto y ejemplos
     """
-    few_shots = load_few_shots()
+    #few_shots = load_few_shots()
     context = query_tables(text_input)
     
     prompt = f"""
