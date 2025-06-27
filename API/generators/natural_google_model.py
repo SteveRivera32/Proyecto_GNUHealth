@@ -1,4 +1,3 @@
-
 from google import genai
 from typing import List
 from ollama import Client
