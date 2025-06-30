@@ -38,7 +38,7 @@ class Agent:
 
     def query_model(self, messages: list, question: str, system_prompt: Optional[str] = None) -> dict:
 
-        messages.append( {"role": "user", "content": question})
+        messages[-1]["content"]=question
 
         for attempt in range(4):
             """Este ciclo for fuerza al modelo a generar un json  no tiene nada que ver con SQL
