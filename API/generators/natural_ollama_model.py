@@ -23,7 +23,7 @@ class TextGenerator:
         with open("./log.txt","a") as file:
             file.write(log)
 
-        print("Enviando mensajes a Ollama:", messages)
+        print("Enviando mensajes a Ollama:"+"*"*10)
         response = self.client.chat(
             model=self.model_name,
             messages=messages,

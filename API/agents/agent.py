@@ -159,9 +159,12 @@ class Agent:
             sql = response["sql"]
             print(f"▶ Ejecutando SQL: {sql}")
 
+
             for attempt in range(4):  # hasta 4 intentos
                 execution_result = self.execute_sql(sql)
                 print(f"🧪 Intento {attempt + 1}: Resultado de ejecución SQL:", execution_result)
+
+                print(execution_result)
 
                 if "error" in execution_result:
                     # Si es un mensaje personalizado por sentencia prohibida, lo tratamos como natural
@@ -189,6 +192,8 @@ class Agent:
                 else:
                     print("\n✅ Entró al bloque para imprimir tabla")
                     print("📊 TABLA SQL EJECUTADA:")
+
+                    
                     print(tabulate(execution_result["result"], headers="keys", tablefmt="github"))
 
                     result_data = json.dumps(execution_result["result"], ensure_ascii=False)
