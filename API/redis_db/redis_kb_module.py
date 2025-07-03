@@ -2,7 +2,7 @@ from langchain_ollama import OllamaEmbeddings
 import os
 import redis
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from redis_kb.redis_query_module import retriever
+from redis_db.redis_query_module import retriever
 from langchain_redis import RedisConfig, RedisVectorStore
 import re
 from glob import glob
