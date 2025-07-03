@@ -169,7 +169,7 @@ class Agent:
                 if "error" in execution_result:
                     # Si es un mensaje personalizado por sentencia prohibida, lo tratamos como natural
                     if any(keyword in execution_result["error"].lower() for keyword in ["no está permitido", "no se permite"]):
-                        self.chat_history.append({"role": "assistant", "content": execution_result["error"]})
+                        self.chat_history.append({"role": "assistant", "content": f"SQLError: {execution_result["error"]["M"]}"})
                         return {"content": execution_result["error"]}, "natural"
 
                     print("🔁 Reintentando debido a error SQL...")
