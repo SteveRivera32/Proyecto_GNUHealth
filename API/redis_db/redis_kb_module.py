@@ -2,7 +2,7 @@ from langchain_ollama import OllamaEmbeddings
 import os
 import redis
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from redis_db.redis_query_module import retriever
+from redis_query_module import retriever
 from langchain_redis import RedisConfig, RedisVectorStore
 import re
 from glob import glob
@@ -81,6 +81,41 @@ def query_tables(input_text):
     context = "\n\n".join(context_parts)
     return context
 
+
+def load_docs():
+    folder_path = "./Tables"
+    pattern = os.path.join(folder_path, "*.txt")
+
+    files = glob(pattern)
+    kbs = {}
+    metadata = []
+
+    for file_path in files:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+            file_name = os.path.basename(file_path)
+            kbs[file_name] = content
+            
+            # Derivar categoría desde nombre de archivo sin extensión
+            category_name = file_name.replace("_table_gpt.txt", "").replace(".txt", "").strip()
+            metadata.append({"category": category_name})
+
+    
+
+    return kbs, metadata
+
+
+def store_procedure():
+    if test_redis():
+        vec_store = create_vector_store()
+
+    kbs, metadata = load_docs()
+    print(kbs)
+    vec_store.add_texts(kbs.values(),metadata)
+
+
+
+
 def build_few_shot_prompt(text_input):
     """
     Construye un prompt utilizando ejemplos y el contexto de las tablas.
@@ -108,4 +143,4 @@ def test_metadata():
     print(p)
 
 if __name__ == "__main__":
-    test_metadata()
+    store_procedure()
