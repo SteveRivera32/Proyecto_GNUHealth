@@ -43,35 +43,21 @@ class Agent:
         messages.append( {"role": "user", "content": question})
 
         for attempt in range(4):
-      
 
             """Este ciclo for fuerza al modelo a generar un json  no tiene nada que ver con SQL
                 Seria recomendable cambiar le nombre de esta funcion 
             """
-           
-
-
-           
-
-            # DEBUG → mostrar el array de mensajes que se envía
-            #print(f"📥 Enviando mensajes al modelo:")
-            #for m in attempt_messages:
-            #    print(f"- {m['role']}: {m['content'][:100]}...")  # solo primeros 100 chars para no saturar
-            #print("\n")
-
             # Enviar al modelo
             raw = self.model.generate(messages)
-            # Necsitamos guardar el SQL que el modelo genero en el chat histoy. igual si equivoco tambien se guarda
-            messages.append(raw)
             raw = self.remove_markdown(raw)
-           
-            #print(f"📩 Respuesta RAW: {raw}")
+            messages.append({"role": "assistant", "content": raw})
+        
 
             try:
                 return json.loads(raw)
             except Exception as e:
                 user_content = (
-                     "Tu respuesta anterior no era JSON válido. "
+                    "Tu respuesta anterior no era JSON válido. "
                     "Asegúrate de responder solo con un objeto JSON correcto según las instrucciones.\n\n"
                     f"\n {raw}")
                 messages.append( {"role": "user", "content": user_content})
@@ -133,6 +119,22 @@ class Agent:
         else:
             raise ValueError("El formato JSON no es compatible (debe ser lista de dicts o dict simple).")
 
+
+    def route(self,response: dict):
+                
+
+        if "content" in response:
+            # Agregar la respuesta del modelo al historial
+            self.chat_history.append({"role": "assistant", "content": response["content"]})
+            return response, "natural"
+
+        if "response" in response:
+            self.chat_history.append({"role": "assistant", "content": response["response"]})
+            return response, "natural"
+        
+
+
+
     def generate_response(self, question: str, system_prompt: Optional[str] = None) -> tuple:
         # Si es la primera llamada, inicializamos el chat_history con el system_prompt (si lo hay)
         if not hasattr(self, 'chat_history'):
@@ -145,12 +147,12 @@ class Agent:
         messages = self.chat_history.copy()
 
         # Llamar a query_model con el historial completo
-
         extra_context = kb.build_few_shot_prompt(question) + "\n"+f"UserQuestion:{question}"
         response = self.query_model(messages, extra_context)
         #print("📥 Respuesta del modelo:", response)
 
         # Analizar la respuesta como antes
+        
         if "parse_error" in response:
             return response, "error"
 
