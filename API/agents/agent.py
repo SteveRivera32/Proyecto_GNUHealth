@@ -4,6 +4,7 @@ import pandas as pd
 from sqlalchemy.orm import Session
 import re
 import os
+from sqlalchemy.exc import SQLAlchemyError, DBAPIError, IntegrityError, OperationalError
 import redis_db.redis_kb_module as kb
 from generators.natural_ollama_model import TextGenerator
 from tabulate import tabulate
@@ -36,14 +37,19 @@ class Agent:
         clean_text = re.sub(r"\n?```", "", clean_text)
         return clean_text.strip()
 
-    def query_model(self, messages: list, question: str, system_prompt: Optional[str] = None) -> dict:
+    def query_model(self, messages: list, question: str) -> dict:
 
-        messages[-1]["content"]=question
+       
+        messages.append( {"role": "user", "content": question})
 
         for attempt in range(4):
+      
+
             """Este ciclo for fuerza al modelo a generar un json  no tiene nada que ver con SQL
                 Seria recomendable cambiar le nombre de esta funcion 
             """
+           
+
 
            
 
@@ -55,7 +61,10 @@ class Agent:
 
             # Enviar al modelo
             raw = self.model.generate(messages)
+            # Necsitamos guardar el SQL que el modelo genero en el chat histoy. igual si equivoco tambien se guarda
+            messages.append(raw)
             raw = self.remove_markdown(raw)
+           
             #print(f"📩 Respuesta RAW: {raw}")
 
             try:
@@ -138,7 +147,7 @@ class Agent:
         # Llamar a query_model con el historial completo
 
         extra_context = kb.build_few_shot_prompt(question) + "\n"+f"UserQuestion:{question}"
-        response = self.query_model(messages, extra_context, system_prompt)
+        response = self.query_model(messages, extra_context)
         #print("📥 Respuesta del modelo:", response)
 
         # Analizar la respuesta como antes
@@ -157,10 +166,11 @@ class Agent:
         elif response.get("require") and "sql" in response:
             print("\n🟢 Entró al bloque SQL requerido")
             sql = response["sql"]
-            print(f"▶ Ejecutando SQL: {sql}")
+           
 
 
             for attempt in range(4):  # hasta 4 intentos
+                print(f"▶ Ejecutando SQL: {sql}")
                 execution_result = self.execute_sql(sql)
                 print(f"🧪 Intento {attempt + 1}: Resultado de ejecución SQL:", execution_result)
 
@@ -168,18 +178,35 @@ class Agent:
 
                 if "error" in execution_result:
                     # Si es un mensaje personalizado por sentencia prohibida, lo tratamos como natural
+                    raw_error_string = execution_result["error"]
+                    match = re.search(r"'M': '(.*?)'(?:,|$|})", raw_error_string)
+
+                    if match:
+                        # Group 1 (the first capturing group) contains the actual message
+                        db_error_message = match.group(1)
+                    else:
+                        # If the regex doesn't find the 'M' pattern, use the full string as a fallback
+                        db_error_message = raw_error_string
+
+                    
+                    print(f"🧪 ERROR Intento {attempt + 1}: Resultado de ejecución SQL:", db_error_message)
+
                     if any(keyword in execution_result["error"].lower() for keyword in ["no está permitido", "no se permite"]):
-                        self.chat_history.append({"role": "assistant", "content": f"SQLError: {execution_result["error"]["M"]}"})
+                   
                         return {"content": execution_result["error"]}, "natural"
 
-                    print("🔁 Reintentando debido a error SQL...")
-                    error_json = {"error": execution_result["error"]}
+                    print(f"🔁 Reintentando {attempt} debido a error SQL...")
                     retry_messages = self.chat_history.copy()
-                    retry_messages.append({"role": "user", "content": json.dumps(error_json)})
-                    retry_response = self.model.generate(retry_messages)
+
+
+
+                    retry_response = self.query_model(retry_messages,f'ExecutedSQL: {sql} SQLError:{db_error_message}')
                     try:
                         retry_json = json.loads(retry_response)
+                       
+                       
                         if retry_json.get("require") and "sql" in retry_json:
+                            print("Corrieginedo SQL")
                             sql = retry_json["sql"]  # actualizar SQL con versión corregida
                         elif "content" in retry_json:
                             self.chat_history.append({"role": "assistant", "content": retry_json["content"]})
