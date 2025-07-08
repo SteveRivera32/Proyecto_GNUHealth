@@ -17,6 +17,7 @@ class Agent:
         self.model = TextGenerator(model_name=model_name)
         self.db_uri = "postgresql+pg8000://admin:gnusolidario@localhost:5432/ghdemo44"
         self.chat_history = []
+        self.system_prompt=""
 
     def load_prompt_template(self) -> str:
         base_path = os.path.dirname(__file__)
@@ -120,127 +121,147 @@ class Agent:
             raise ValueError("El formato JSON no es compatible (debe ser lista de dicts o dict simple).")
 
 
-    def route(self,response: dict):
-                
+    def get_route(self,response: dict):
+        
 
         if "content" in response:
             # Agregar la respuesta del modelo al historial
             self.chat_history.append({"role": "assistant", "content": response["content"]})
-            return response, "natural"
+            return "CONTENT"
 
-        if "response" in response:
+        elif "response" in response:
             self.chat_history.append({"role": "assistant", "content": response["response"]})
-            return response, "natural"
+            return "RESPONSE"
+        elif "sql" in response:
+            #convertimos el diccionario en string se lo madnamos de regreso al LLM
+            self.chat_history.append({"role":"assistant","content":json.dumps(response)})
+            return "SQL"
         
+        return "CONTENT"
+
+    def get_sql_error(self,sql_alchemy_execpetion):
+        
+        match = re.search(r"'M': '(.*?)'(?:,|$|})", sql_alchemy_execpetion)
+
+        if match:
+            # Group 1 (the first capturing group) contains the actual message
+            db_error_message = match.group(1)
+        else:
+            # If the regex doesn't find the 'M' pattern, use the full string as a fallback
+            db_error_message = sql_alchemy_execpetion
+        return db_error_message
+
+    # we need to implement a self correctipon algorithm
+    def retry_sql(self, sql_error,sql="", users_question="",chat_history=None,attempts=4):
+        # for thius we will need to start a new chat with the LLM
+        if chat_history==None:
+            
+            chat_history=[]
+            chat_history.append({"role":"system","content":self.system_prompt})
+        result={"error":0}
+        for attempt in range(attempts):
+
+            if "error" in result:
+                    
+
+                print(f"Intento {attempt}:\n ")
+    
+                prompt=f'UserQuestion:{users_question} ExecutedSQL:{sql} \nSQLError:{sql_error} \n'
+                if(attempt==0):
+                    prompt+="\n Database Schema:\n"+kb.build_few_shot_prompt(prompt)
+    
+                response=self.query_model(chat_history,prompt)
+                #chat_history.append({"role":"assistant","content":json.dumps(response)})
+
+    
+                route=self.get_route(response)
+                if route=="SQL":
+                    result=self.execute_sql(sql)
+            else:
+                return result 
+        
+        return "error"
 
 
+
+                
+    
+        
+        
+        
+    
 
     def generate_response(self, question: str, system_prompt: Optional[str] = None) -> tuple:
         # Si es la primera llamada, inicializamos el chat_history con el system_prompt (si lo hay)
+        self.system_prompt=system_prompt
         if not hasattr(self, 'chat_history'):
+
             self.chat_history = []
 
         if not self.chat_history and system_prompt:
             self.chat_history.append({"role": "system", "content": system_prompt})
+            
+            # Guaradamos el system prompt
 
         # Construir el messages que se va a enviar esta vez
         messages = self.chat_history.copy()
-
-        # Llamar a query_model con el historial completo
         extra_context = kb.build_few_shot_prompt(question) + "\n"+f"UserQuestion:{question}"
         response = self.query_model(messages, extra_context)
-        #print("📥 Respuesta del modelo:", response)
-
-        # Analizar la respuesta como antes
-        
-        if "parse_error" in response:
-            return response, "error"
-
-        if "content" in response:
-            # Agregar la respuesta del modelo al historial
-            self.chat_history.append({"role": "assistant", "content": response["content"]})
-            return response, "natural"
-
-        if "response" in response:
-            self.chat_history.append({"role": "assistant", "content": response["response"]})
-            return response, "natural"
-
-        elif response.get("require") and "sql" in response:
-            print("\n🟢 Entró al bloque SQL requerido")
-            sql = response["sql"]
+        next_route=self.get_route(response)
+       
+        if next_route=="SQL":
            
+            sql=response["sql"]
+            execution_result = self.execute_sql(sql)
 
 
-            for attempt in range(4):  # hasta 4 intentos
-                print(f"▶ Ejecutando SQL: {sql}")
-                execution_result = self.execute_sql(sql)
-                print(f"🧪 Intento {attempt + 1}: Resultado de ejecución SQL:", execution_result)
-
-                print(execution_result)
-
-                if "error" in execution_result:
-                    # Si es un mensaje personalizado por sentencia prohibida, lo tratamos como natural
-                    raw_error_string = execution_result["error"]
-                    match = re.search(r"'M': '(.*?)'(?:,|$|})", raw_error_string)
-
-                    if match:
-                        # Group 1 (the first capturing group) contains the actual message
-                        db_error_message = match.group(1)
-                    else:
-                        # If the regex doesn't find the 'M' pattern, use the full string as a fallback
-                        db_error_message = raw_error_string
-
+            print(f"▶ Ejecutando SQL: {sql}")
+            print(execution_result)    
+                
+            if "error" in execution_result:
+                if any(keyword in execution_result["error"].lower() for keyword in ["no está permitido", "no se permite"]):
+                        #Filtra preguntas no desaedas
+                    return {"content": execution_result["error"]}, "natural"
                     
-                    print(f"🧪 ERROR Intento {attempt + 1}: Resultado de ejecución SQL:", db_error_message)
+                # si no obtenemos el error de SQL Alchemy
+                db_error_message=self.get_sql_error(execution_result["error"])  
+                print(f"\n ERROR Intento : Resultado de ejecución SQL:", db_error_message+"\n")
+                print(f"🔁 Reintentando: debido a error SQL...")
+                #Creamos un nuevo chat con el modelo para intentar resolver el problema
+                result=self.retry_sql(sql_error=db_error_message,sql=sql,users_question=question)
 
-                    if any(keyword in execution_result["error"].lower() for keyword in ["no está permitido", "no se permite"]):
-                   
-                        return {"content": execution_result["error"]}, "natural"
-
-                    print(f"🔁 Reintentando {attempt} debido a error SQL...")
-                    retry_messages = self.chat_history.copy()
-
-
-
-                    retry_response = self.query_model(retry_messages,f'ExecutedSQL: {sql} SQLError:{db_error_message}')
-                    try:
-                        retry_json = json.loads(retry_response)
-                       
-                       
-                        if retry_json.get("require") and "sql" in retry_json:
-                            print("Corrieginedo SQL")
-                            sql = retry_json["sql"]  # actualizar SQL con versión corregida
-                        elif "content" in retry_json:
-                            self.chat_history.append({"role": "assistant", "content": retry_json["content"]})
-                            return retry_json, "natural"
-                        else:
-                            return {"parse_error": "Respuesta corregida no reconocida"}, "error"
-                    except:
-                        print("❌ El modelo devolvió un JSON inválido durante corrección de error.")
-                        continue  # intentar de nuevo
+                if result=="error":
+                    return {"content": "No se pudo generar una respuesta válida después de varios intentos."}, "error"
                 else:
-                    print("\n✅ Entró al bloque para imprimir tabla")
-                    print("📊 TABLA SQL EJECUTADA:")
+                    execution_result=result
+
+            print("\n✅ Entró al bloque para imprimir tabla")
+            print("📊 TABLA SQL EJECUTADA:")
 
                     
-                    print(tabulate(execution_result["result"], headers="keys", tablefmt="github"))
+            print(tabulate(execution_result["result"], headers="keys", tablefmt="github"))
 
-                    result_data = json.dumps(execution_result["result"], ensure_ascii=False)
-                    result_prompt = f"{result_data}"
-                    print("\n📤 Resultado SQL en JSON:\n", result_prompt)
+            result_data = json.dumps(execution_result["result"], ensure_ascii=False)
+            result_prompt = f"{result_data}"
+            print("\n📤 Resultado SQL en JSON:\n", result_prompt)
 
-                    # Aquí también puedes usar chat_history + nuevo user message si quieres
-                    markdown_response = self.json_to_markdown(result_prompt)
-                    print("\n📊 Tabla convertida a Markdown:\n", markdown_response)
+            # Aquí también puedes usar chat_history + nuevo user message si quieres
+            markdown_response = self.json_to_markdown(result_prompt)
+            print("\n📊 Tabla convertida a Markdown:\n", markdown_response)
 
-                    self.chat_history.append({"role": "assistant", "content": markdown_response.get("content", "")})
-                    
-                    return markdown_response, "sql_result"
+            self.chat_history.append({"role": "assistant", "content": markdown_response.get("content", "")})
+            return markdown_response, "sql_result"
+        elif next_route == "RESPONSE":
+            return response, "natural"
 
-            return {"content": "No se pudo generar una respuesta válida después de varios intentos."}, "error"
+
+        elif next_route == "CONTENT":
+            return response, "natural"
 
         elif "error" in response:
             return response, "error"
 
         else:
             return {"parse_error": "Formato de respuesta no reconocido"}, "error"
+
+        

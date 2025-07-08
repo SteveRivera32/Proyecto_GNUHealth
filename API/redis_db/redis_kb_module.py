@@ -67,7 +67,7 @@ def query_tables(input_text):
         str: Contexto construido con la información relevante de las tablas
     """
     vector_store = create_vector_store()
-    retriever = vector_store.as_retriever(search_type="similarity", search_kwargs={"k": 4})
+    retriever = vector_store.as_retriever(search_type="similarity", search_kwargs={"k": 5})
     
     # Recuperar documentos relevantes
     retrieved_docs = retriever.invoke(input_text)

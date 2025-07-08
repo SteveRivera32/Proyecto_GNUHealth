@@ -1,6 +1,13 @@
 tabla: gnuhealth_pathology
 descripción: Catálogo de enfermedades o condiciones médicas. Contiene información estandarizada como el código, nombre, clasificación genética y categoría principal, usada para registrar diagnósticos en los pacientes.
 
+Consideraciones Clave Adicionales para gnuhealth_pathology
+Catálogo de Patologías: La tabla gnuhealth_pathology es un catálogo de todas las posibles enfermedades o condiciones médicas que se pueden diagnosticar.
+
+Vínculo con gnuhealth_patient_disease: El campo pathology en gnuhealth_patient_disease es una clave foránea que apunta a gnuhealth_pathology.id. Esto significa que cada registro de diagnóstico de paciente (gnuhealth_patient_disease) está vinculado a una definición de enfermedad (gnuhealth_pathology).
+
+Información Estandarizada: gnuhealth_pathology contiene el code y name estandarizados de las enfermedades, lo cual es útil para listar o agrupar diagnósticos por su nombre oficial. También tiene un campo active para indicar si la patología está en uso.
+
 columnas:
   id: integer, clave primaria autoincremental
   create_date: timestamp, fecha de creación del registro
